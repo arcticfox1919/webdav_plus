@@ -1,3 +1,9 @@
+## 1.2.0
+
+* Added `baseUrl` parameter to constructors for cleaner API with relative paths
+* Made `contentType` optional in `putFileStream` with auto-detection from file extension
+* Improved API documentation, especially for `isPreemptive` requirement in streaming uploads
+
 ## 1.1.0
 
 * Fixed XML namespace parsing to support various prefix formats (D:, d:, no prefix) for better server compatibility

@@ -16,34 +16,86 @@ import 'auth/authentication_handler.dart';
 /// Supports file operations, property management, locking, and ACL operations.
 abstract interface class WebdavClient {
   /// Factory constructor - creates basic client
-  factory WebdavClient() => HttpWebdavClient();
+  ///
+  /// [baseUrl] is the optional base URL for all operations. When set, all URL
+  /// parameters can be relative paths resolved against this base URL.
+  factory WebdavClient({String? baseUrl}) => HttpWebdavClient(baseUrl: baseUrl);
 
   /// Factory constructor - creates client with authentication
+  ///
+  /// [username] and [password] are the credentials for HTTP Basic authentication.
+  ///
+  /// [baseUrl] is the optional base URL for all operations. When set, all URL
+  /// parameters can be relative paths resolved against this base URL.
+  ///
+  /// [isPreemptive] controls when credentials are sent:
+  /// - `false` (default): Credentials are sent only after server returns 401.
+  ///   This is more secure as credentials are only sent when required.
+  /// - `true`: Credentials are sent with every request immediately.
+  ///   **Required for streaming uploads** (`putFileStream`, `putStream`) because
+  ///   streams can only be read once and cannot be retried after a 401 response.
   factory WebdavClient.withCredentials(
     String username,
     String password, {
+    String? baseUrl,
     bool isPreemptive = false,
   }) => HttpWebdavClient.withCredentials(
     username,
     password,
+    baseUrl: baseUrl,
     isPreemptive: isPreemptive,
   );
 
   /// Factory constructor - creates client with compression support
-  factory WebdavClient.withCompression() => HttpWebdavClient.withCompression();
+  ///
+  /// [baseUrl] is the optional base URL for all operations.
+  ///
+  /// Enables HTTP gzip/deflate compression for responses. The server must also
+  /// support compression for this to have effect.
+  factory WebdavClient.withCompression({String? baseUrl}) =>
+      HttpWebdavClient.withCompression(baseUrl: baseUrl);
 
   /// Factory constructor - creates fully configured client
+  ///
+  /// [baseUrl] is the optional base URL for all operations.
+  ///
+  /// [username] and [password] are optional credentials for HTTP Basic authentication.
+  ///
+  /// [isPreemptive] controls when credentials are sent (see [withCredentials] for details).
+  /// **Required to be `true` for streaming uploads.**
+  ///
+  /// [compression] enables HTTP gzip/deflate compression when `true`.
   factory WebdavClient.configured({
+    String? baseUrl,
     String? username,
     String? password,
     bool isPreemptive = false,
     bool compression = false,
   }) => HttpWebdavClient.configured(
+    baseUrl: baseUrl,
     username: username,
     password: password,
     isPreemptive: isPreemptive,
     compression: compression,
   );
+
+  /// Set the base URL for all operations
+  ///
+  /// When set, all URL parameters can be relative paths that will be
+  /// resolved against this base URL. The base URL should include the
+  /// protocol and host (e.g., 'https://webdav.example.com/dav').
+  ///
+  /// Example:
+  /// ```dart
+  /// client.setBaseUrl('https://webdav.example.com/dav');
+  /// await client.list('/folder'); // Resolves to https://webdav.example.com/dav/folder
+  /// ```
+  void setBaseUrl(String baseUrl);
+
+  /// Get the current base URL
+  ///
+  /// Returns null if no base URL has been set.
+  String? get baseUrl;
 
   /// Add authentication credentials
   ///
@@ -323,6 +375,11 @@ abstract interface class WebdavClient {
   /// [contentLength] must be provided for the Content-Length header.
   /// [contentType] specifies the MIME type.
   /// Suitable for large file uploads without loading entire file into memory.
+  ///
+  /// **Important:** Streaming uploads require preemptive authentication because
+  /// the stream can only be read once. If the server returns 401, the stream
+  /// cannot be re-read for retry. Use `WebdavClient.withCredentials(..., isPreemptive: true)`
+  /// or call `enablePreemptiveAuthentication()` before streaming uploads.
   Future<void> putStream(
     String url,
     Stream<List<int>> dataStream,
@@ -333,12 +390,19 @@ abstract interface class WebdavClient {
   /// Upload a file using streaming (for large files) with progress tracking
   ///
   /// Uploads [localFile] to the resource at [url] using streaming.
+  /// [contentType] specifies the MIME type. If not provided, it will be
+  /// automatically detected from the file extension.
   /// [onProgress] callback receives (bytesSent, totalBytes) for progress tracking.
   /// Does not load the entire file into memory.
+  ///
+  /// **Important:** Streaming uploads require preemptive authentication because
+  /// the stream can only be read once. If the server returns 401, the stream
+  /// cannot be re-read for retry. Use `WebdavClient.withCredentials(..., isPreemptive: true)`
+  /// or call `enablePreemptiveAuthentication()` before streaming uploads.
   Future<void> putFileStream(
     String url,
-    File localFile,
-    String contentType, {
+    File localFile, {
+    String? contentType,
     void Function(int bytesSent, int totalBytes)? onProgress,
   });
 

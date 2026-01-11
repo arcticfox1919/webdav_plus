@@ -56,7 +56,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  webdav_plus: ^1.0.0
+  webdav_plus: ^1.2.0
 ```
 
 Then run:
@@ -74,42 +74,44 @@ dart pub get
 import 'package:webdav_plus/webdav_plus.dart';
 
 void main() async {
-  // Create a client with credentials
-  final client = WebdavClient.withCredentials('username', 'password');
+  // Create a client with credentials and base URL
+  final client = WebdavClient.withCredentials(
+    'username',
+    'password',
+    baseUrl: 'https://webdav.example.com/',
+  );
   
-  final baseUrl = 'https://webdav.example.com/';
-  
-  // List directory contents
-  List<DavResource> resources = await client.list(baseUrl);
+  // List directory contents (paths are relative to baseUrl)
+  List<DavResource> resources = await client.list('/');
   for (final resource in resources) {
     print('${resource.isDirectory ? "[DIR]" : "[FILE]"} ${resource.name}');
   }
   
   // Upload a file
   await client.put(
-    '${baseUrl}hello.txt',
+    '/hello.txt',
     Uint8List.fromList(utf8.encode('Hello, WebDAV!')),
   );
   
   // Download a file
-  Uint8List content = await client.get('${baseUrl}hello.txt');
+  Uint8List content = await client.get('/hello.txt');
   print(utf8.decode(content));
   
   // Create a directory
-  await client.createDirectory('${baseUrl}new-folder/');
+  await client.createDirectory('/new-folder/');
   
   // Move/Copy resources
-  await client.move('${baseUrl}hello.txt', '${baseUrl}new-folder/hello.txt');
-  await client.copy('${baseUrl}new-folder/hello.txt', '${baseUrl}backup.txt');
+  await client.move('/hello.txt', '/new-folder/hello.txt');
+  await client.copy('/new-folder/hello.txt', '/backup.txt');
   
   // Delete a resource
-  await client.delete('${baseUrl}backup.txt');
+  await client.delete('/backup.txt');
   
   // Check if resource exists
-  bool exists = await client.exists('${baseUrl}new-folder/');
+  bool exists = await client.exists('/new-folder/');
   
   // Clean up
-  client.dispose();
+  client.shutdown();
 }
 ```
 
@@ -119,8 +121,18 @@ void main() async {
 // Basic client (no authentication)
 final client = WebdavClient();
 
+// With base URL only
+final client = WebdavClient(baseUrl: 'https://webdav.example.com/');
+
 // With credentials (challenge-response mode)
 final client = WebdavClient.withCredentials('user', 'pass');
+
+// With credentials and base URL
+final client = WebdavClient.withCredentials(
+  'user',
+  'pass',
+  baseUrl: 'https://webdav.example.com/',
+);
 
 // With preemptive authentication (sends credentials immediately)
 final client = WebdavClient.withCredentials('user', 'pass', isPreemptive: true);
@@ -130,11 +142,15 @@ final client = WebdavClient.withCompression();
 
 // Fully configured
 final client = WebdavClient.configured(
+  baseUrl: 'https://webdav.example.com/',
   username: 'user',
   password: 'pass',
   isPreemptive: true,
   compression: true,
 );
+
+// Set or change base URL at runtime
+client.setBaseUrl('https://another-server.com/dav/');
 ```
 
 ## Advanced Usage
@@ -143,7 +159,18 @@ final client = WebdavClient.configured(
 
 For memory-efficient handling of large files:
 
+> **⚠️ Important:** Streaming uploads (`putFileStream`, `putStream`) require **preemptive authentication**.
+> The stream can only be read once, so if the server returns 401, it cannot be retried.
+> Use `isPreemptive: true` when creating the client.
+
 ```dart
+// Client must use preemptive auth for streaming uploads
+final client = WebdavClient.withCredentials(
+  'user', 'pass',
+  baseUrl: 'https://webdav.example.com/',
+  isPreemptive: true, // Required for streaming uploads!
+);
+
 // Streaming download - returns Stream<List<int>>
 Stream<List<int>> stream = await client.getStream(url);
 
@@ -158,12 +185,20 @@ await client.downloadToFile(
 );
 
 // Streaming upload from file with progress
+// contentType is optional - auto-detected from file extension
 await client.putFileStream(
   url,
-  '/path/to/local/large-file.zip',
+  File('/path/to/local/large-file.zip'),
   onProgress: (sent, total) {
     print('Upload progress: ${(sent / total * 100).toStringAsFixed(1)}%');
   },
+);
+
+// Or specify contentType explicitly if needed
+await client.putFileStream(
+  url,
+  File('/path/to/file'),
+  contentType: 'application/octet-stream',
 );
 ```
 

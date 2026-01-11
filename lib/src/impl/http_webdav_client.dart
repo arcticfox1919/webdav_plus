@@ -47,33 +47,72 @@ class HttpWebdavClient implements WebdavClient {
   bool _compressionEnabled = false;
   Map<String, String> _defaultHeaders = {};
   bool _ignoreCookies = false;
+  String? _baseUrl;
+
+  @override
+  String? get baseUrl => _baseUrl;
+
+  @override
+  void setBaseUrl(String baseUrl) {
+    // Remove trailing slash for consistent URL joining
+    _baseUrl = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+  }
+
+  /// Resolve a URL against the base URL
+  ///
+  /// If the URL is absolute (starts with http:// or https://), it is returned as-is.
+  /// Otherwise, it is joined with the base URL.
+  String _resolveUrl(String url) {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    if (_baseUrl == null) {
+      return url;
+    }
+    // Ensure path starts with /
+    final path = url.startsWith('/') ? url : '/$url';
+    return '$_baseUrl$path';
+  }
 
   /// Create a new HttpWebdavClient instance with default HTTP client
-  HttpWebdavClient() {
+  HttpWebdavClient({String? baseUrl}) {
     _client = http.Client();
     _setupDefaultHeaders();
+    if (baseUrl != null) {
+      setBaseUrl(baseUrl);
+    }
   }
 
   /// Create client with authentication credentials
   HttpWebdavClient.withCredentials(
     String username,
     String password, {
+    String? baseUrl,
     bool isPreemptive = false,
   }) {
     _client = http.Client();
     _setupDefaultHeaders();
+    if (baseUrl != null) {
+      setBaseUrl(baseUrl);
+    }
     setCredentials(username, password, isPreemptive: isPreemptive);
   }
 
   /// Create client with compression support
-  HttpWebdavClient.withCompression() {
+  HttpWebdavClient.withCompression({String? baseUrl}) {
     _client = http.Client();
     _setupDefaultHeaders();
+    if (baseUrl != null) {
+      setBaseUrl(baseUrl);
+    }
     enableCompression();
   }
 
   /// Create fully configured client
   HttpWebdavClient.configured({
+    String? baseUrl,
     String? username,
     String? password,
     bool isPreemptive = false,
@@ -81,6 +120,9 @@ class HttpWebdavClient implements WebdavClient {
   }) {
     _client = http.Client();
     _setupDefaultHeaders();
+    if (baseUrl != null) {
+      setBaseUrl(baseUrl);
+    }
     if (username != null && password != null) {
       setCredentials(username, password, isPreemptive: isPreemptive);
     }
@@ -934,11 +976,12 @@ class HttpWebdavClient implements WebdavClient {
     String url,
     Map<String, String> headers,
   ) async {
+    final resolvedUrl = _resolveUrl(url);
     try {
       Map<String, String> requestHeaders = _buildHeaders();
       requestHeaders.addAll(headers);
 
-      http.Request request = http.Request('GET', Uri.parse(url));
+      http.Request request = http.Request('GET', Uri.parse(resolvedUrl));
       request.headers.addAll(requestHeaders);
 
       http.StreamedResponse streamedResponse = await _client.send(request);
@@ -946,7 +989,10 @@ class HttpWebdavClient implements WebdavClient {
       // Handle authentication challenges
       if (streamedResponse.statusCode == 401) {
         if (_username != null && _password != null) {
-          http.Request retryRequest = http.Request('GET', Uri.parse(url));
+          http.Request retryRequest = http.Request(
+            'GET',
+            Uri.parse(resolvedUrl),
+          );
           retryRequest.headers.addAll(requestHeaders);
           String username = _username!;
           if (_domain != null && _domain!.isNotEmpty) {
@@ -993,10 +1039,11 @@ class HttpWebdavClient implements WebdavClient {
     String savePath, {
     void Function(int bytesReceived, int totalBytes)? onProgress,
   }) async {
+    final resolvedUrl = _resolveUrl(url);
     try {
       Map<String, String> requestHeaders = _buildHeaders();
 
-      http.Request request = http.Request('GET', Uri.parse(url));
+      http.Request request = http.Request('GET', Uri.parse(resolvedUrl));
       request.headers.addAll(requestHeaders);
 
       http.StreamedResponse streamedResponse = await _client.send(request);
@@ -1004,7 +1051,10 @@ class HttpWebdavClient implements WebdavClient {
       // Handle authentication challenges
       if (streamedResponse.statusCode == 401) {
         if (_username != null && _password != null) {
-          http.Request retryRequest = http.Request('GET', Uri.parse(url));
+          http.Request retryRequest = http.Request(
+            'GET',
+            Uri.parse(resolvedUrl),
+          );
           retryRequest.headers.addAll(requestHeaders);
           String username = _username!;
           if (_domain != null && _domain!.isNotEmpty) {
@@ -1067,6 +1117,7 @@ class HttpWebdavClient implements WebdavClient {
     int contentLength,
     String contentType,
   ) async {
+    final resolvedUrl = _resolveUrl(url);
     try {
       Map<String, String> headers = _buildHeaders();
       headers['Content-Type'] = contentType;
@@ -1074,7 +1125,7 @@ class HttpWebdavClient implements WebdavClient {
 
       http.StreamedRequest request = http.StreamedRequest(
         'PUT',
-        Uri.parse(url),
+        Uri.parse(resolvedUrl),
       );
       request.headers.addAll(headers);
 
@@ -1114,19 +1165,21 @@ class HttpWebdavClient implements WebdavClient {
   @override
   Future<void> putFileStream(
     String url,
-    File localFile,
-    String contentType, {
+    File localFile, {
+    String? contentType,
     void Function(int bytesSent, int totalBytes)? onProgress,
   }) async {
+    final resolvedUrl = _resolveUrl(url);
     try {
       final fileLength = await localFile.length();
+      final mimeType = contentType ?? WebDAVUtil.getMimeType(localFile.path);
       Map<String, String> headers = _buildHeaders();
-      headers['Content-Type'] = contentType;
+      headers['Content-Type'] = mimeType;
       headers['Content-Length'] = fileLength.toString();
 
       http.StreamedRequest request = http.StreamedRequest(
         'PUT',
-        Uri.parse(url),
+        Uri.parse(resolvedUrl),
       );
       request.headers.addAll(headers);
 
@@ -1462,16 +1515,17 @@ class HttpWebdavClient implements WebdavClient {
 
   @override
   Future<String> refreshLock(String url, String token, String file) async {
+    final resolvedUrl = _resolveUrl(url);
     try {
       Map<String, String> headers = _buildHeaders();
       // Align with Java: include resource and token in If header
-      final resource = (file.isNotEmpty) ? file : Uri.parse(url).path;
+      final resource = (file.isNotEmpty) ? file : Uri.parse(resolvedUrl).path;
       headers['If'] = '<$resource> (<$token>)';
       headers['Timeout'] = 'Second-3600'; // Default 1 hour timeout
 
       http.Response response = await _makeRequest(
         'LOCK',
-        url,
+        resolvedUrl,
         headers: headers,
       );
 
@@ -1947,8 +2001,9 @@ class HttpWebdavClient implements WebdavClient {
     String? body,
     Uint8List? bodyBytes,
   }) async {
+    final resolvedUrl = _resolveUrl(url);
     try {
-      http.Request request = http.Request(method, Uri.parse(url));
+      http.Request request = http.Request(method, Uri.parse(resolvedUrl));
 
       if (headers != null) {
         request.headers.addAll(headers);
@@ -1969,12 +2024,15 @@ class HttpWebdavClient implements WebdavClient {
         if (_authHandler != null) {
           try {
             String? authHeader = await _authHandler!.handleChallenge(
-              url,
-              _createHttpRequestFromResponse(response, url, method),
+              resolvedUrl,
+              _createHttpRequestFromResponse(response, resolvedUrl, method),
             );
             if (authHeader != null) {
               // Retry with authentication
-              http.Request retryRequest = http.Request(method, Uri.parse(url));
+              http.Request retryRequest = http.Request(
+                method,
+                Uri.parse(resolvedUrl),
+              );
               retryRequest.headers.addAll(headers ?? {});
               retryRequest.headers['Authorization'] = authHeader;
 
@@ -1990,7 +2048,10 @@ class HttpWebdavClient implements WebdavClient {
           } catch (e) {
             // If auth handler fails, fall back to basic auth
             if (!_preemptiveAuth && _username != null && _password != null) {
-              http.Request retryRequest = http.Request(method, Uri.parse(url));
+              http.Request retryRequest = http.Request(
+                method,
+                Uri.parse(resolvedUrl),
+              );
               retryRequest.headers.addAll(headers ?? {});
 
               String username = _username!;
@@ -2014,7 +2075,10 @@ class HttpWebdavClient implements WebdavClient {
           }
         } else if (!_preemptiveAuth && _username != null && _password != null) {
           // Fallback to basic auth for backward compatibility
-          http.Request retryRequest = http.Request(method, Uri.parse(url));
+          http.Request retryRequest = http.Request(
+            method,
+            Uri.parse(resolvedUrl),
+          );
           retryRequest.headers.addAll(headers ?? {});
 
           String username = _username!;
