@@ -1,4 +1,4 @@
-# WebDAV Plus - A Feature-Rich WebDAV Client Library for Dart
+# WebDAV
 
 [![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=flat&logo=dart&logoColor=white)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white)](https://flutter.dev)
