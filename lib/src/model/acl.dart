@@ -1,4 +1,5 @@
 import 'package:xml/xml.dart';
+import '../parser/xml_helpers.dart' as xh;
 
 /// Access Control List (ACL) element
 ///
@@ -51,11 +52,8 @@ class Acl {
   static Acl fromXmlElement(XmlElement aclElement) {
     final aces = <Ace>[];
 
-    // Try both qualified and unqualified names
-    var aceElements = aclElement.findAllElements('ace');
-    if (aceElements.isEmpty) {
-      aceElements = aclElement.findAllElements('D:ace');
-    }
+    // Use local name matching for namespace-agnostic parsing
+    final aceElements = xh.descendantsByLocalName(aclElement, 'ace');
 
     for (final aceElement in aceElements) {
       aces.add(Ace.fromXmlElement(aceElement));
@@ -137,43 +135,37 @@ class Ace {
   /// Parse ACE from XML element
   static Ace fromXmlElement(XmlElement aceElement) {
     // Parse principal
-    var principalElement = aceElement.findAllElements('principal').firstOrNull;
-    if (principalElement == null) {
-      principalElement = aceElement.findAllElements('D:principal').firstOrNull;
-    }
+    final principalElement = xh.firstDescendantByLocalName(
+      aceElement,
+      'principal',
+    );
     if (principalElement == null) {
       throw FormatException('ACE element missing principal');
     }
     final principal = Principal.fromXmlElement(principalElement);
 
     // Parse grant
-    var grantElement = aceElement.findAllElements('grant').firstOrNull;
-    if (grantElement == null) {
-      grantElement = aceElement.findAllElements('D:grant').firstOrNull;
-    }
+    final grantElement = xh.firstDescendantByLocalName(aceElement, 'grant');
     final grant = grantElement != null
         ? Grant.fromXmlElement(grantElement)
         : null;
 
     // Parse deny
-    var denyElement = aceElement.findAllElements('deny').firstOrNull;
-    if (denyElement == null) {
-      denyElement = aceElement.findAllElements('D:deny').firstOrNull;
-    }
+    final denyElement = xh.firstDescendantByLocalName(aceElement, 'deny');
     final deny = denyElement != null ? Deny.fromXmlElement(denyElement) : null;
 
     // Check protected
-    var protectedElement = aceElement.findAllElements('protected').firstOrNull;
-    if (protectedElement == null) {
-      protectedElement = aceElement.findAllElements('D:protected').firstOrNull;
-    }
+    final protectedElement = xh.firstDescendantByLocalName(
+      aceElement,
+      'protected',
+    );
     final isProtected = protectedElement != null;
 
     // Parse inherited
-    var inheritedElement = aceElement.findAllElements('inherited').firstOrNull;
-    if (inheritedElement == null) {
-      inheritedElement = aceElement.findAllElements('D:inherited').firstOrNull;
-    }
+    final inheritedElement = xh.firstDescendantByLocalName(
+      aceElement,
+      'inherited',
+    );
     final inherited = inheritedElement?.innerText;
 
     return Ace(
@@ -268,54 +260,33 @@ class Principal {
   /// Parse Principal from XML element
   static Principal fromXmlElement(XmlElement principalElement) {
     // Check for href
-    var hrefElement = principalElement.findAllElements('href').firstOrNull;
-    if (hrefElement == null) {
-      hrefElement = principalElement.findAllElements('D:href').firstOrNull;
-    }
+    final hrefElement = xh.firstDescendantByLocalName(principalElement, 'href');
     final href = hrefElement?.innerText;
 
     // Check for special principal types
-    var allElement = principalElement.findAllElements('all').firstOrNull;
-    if (allElement == null) {
-      allElement = principalElement.findAllElements('D:all').firstOrNull;
-    }
+    final allElement = xh.firstDescendantByLocalName(principalElement, 'all');
     final isAll = allElement != null;
 
-    var authenticatedElement = principalElement
-        .findAllElements('authenticated')
-        .firstOrNull;
-    if (authenticatedElement == null) {
-      authenticatedElement = principalElement
-          .findAllElements('D:authenticated')
-          .firstOrNull;
-    }
+    final authenticatedElement = xh.firstDescendantByLocalName(
+      principalElement,
+      'authenticated',
+    );
     final isAuthenticated = authenticatedElement != null;
 
-    var unauthenticatedElement = principalElement
-        .findAllElements('unauthenticated')
-        .firstOrNull;
-    if (unauthenticatedElement == null) {
-      unauthenticatedElement = principalElement
-          .findAllElements('D:unauthenticated')
-          .firstOrNull;
-    }
+    final unauthenticatedElement = xh.firstDescendantByLocalName(
+      principalElement,
+      'unauthenticated',
+    );
     final isUnauthenticated = unauthenticatedElement != null;
 
-    var selfElement = principalElement.findAllElements('self').firstOrNull;
-    if (selfElement == null) {
-      selfElement = principalElement.findAllElements('D:self').firstOrNull;
-    }
+    final selfElement = xh.firstDescendantByLocalName(principalElement, 'self');
     final isSelf = selfElement != null;
 
     // Check for property
-    var propertyElement = principalElement
-        .findAllElements('property')
-        .firstOrNull;
-    if (propertyElement == null) {
-      propertyElement = principalElement
-          .findAllElements('D:property')
-          .firstOrNull;
-    }
+    final propertyElement = xh.firstDescendantByLocalName(
+      principalElement,
+      'property',
+    );
     final property = propertyElement?.innerText;
 
     return Principal(
@@ -391,11 +362,11 @@ class Grant {
   static Grant fromXmlElement(XmlElement grantElement) {
     final privileges = <Privilege>[];
 
-    // Try both qualified and unqualified names
-    var privilegeElements = grantElement.findAllElements('privilege');
-    if (privilegeElements.isEmpty) {
-      privilegeElements = grantElement.findAllElements('D:privilege');
-    }
+    // Use local name matching for namespace-agnostic parsing
+    final privilegeElements = xh.descendantsByLocalName(
+      grantElement,
+      'privilege',
+    );
 
     for (final privilegeElement in privilegeElements) {
       privileges.add(Privilege.fromXmlElement(privilegeElement));
@@ -455,11 +426,11 @@ class Deny {
   static Deny fromXmlElement(XmlElement denyElement) {
     final privileges = <Privilege>[];
 
-    // Try both qualified and unqualified names
-    var privilegeElements = denyElement.findAllElements('privilege');
-    if (privilegeElements.isEmpty) {
-      privilegeElements = denyElement.findAllElements('D:privilege');
-    }
+    // Use local name matching for namespace-agnostic parsing
+    final privilegeElements = xh.descendantsByLocalName(
+      denyElement,
+      'privilege',
+    );
 
     for (final privilegeElement in privilegeElements) {
       privileges.add(Privilege.fromXmlElement(privilegeElement));

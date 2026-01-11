@@ -1,6 +1,7 @@
 import 'package:xml/xml.dart';
 import 'propstat.dart';
 import 'error.dart';
+import '../parser/xml_helpers.dart' as xh;
 
 /// WebDAV Response Element
 ///
@@ -67,60 +68,49 @@ class Response {
 
   /// Parse response from XML element
   static Response fromXmlElement(XmlElement responseElement) {
-    // Try both qualified and unqualified names
-    var hrefElement = responseElement.findAllElements('href').firstOrNull;
-    if (hrefElement == null) {
-      hrefElement = responseElement.findAllElements('D:href').firstOrNull;
-    }
+    // Use xml_helpers to find elements by local name (ignores namespace prefix)
+    final hrefElement = xh.firstDescendantByLocalName(responseElement, 'href');
     if (hrefElement == null) {
       throw FormatException('Response element missing href');
     }
     final href = hrefElement.innerText;
 
     final propstats = <Propstat>[];
-    var propstatElements = responseElement.findAllElements('propstat');
-    if (propstatElements.isEmpty) {
-      propstatElements = responseElement.findAllElements('D:propstat');
-    }
+    final propstatElements = xh.descendantsByLocalName(
+      responseElement,
+      'propstat',
+    );
     for (final propstatElement in propstatElements) {
       propstats.add(Propstat.fromXmlElement(propstatElement));
     }
 
-    var statusElement = responseElement.findAllElements('status').firstOrNull;
-    if (statusElement == null) {
-      statusElement = responseElement.findAllElements('D:status').firstOrNull;
-    }
+    final statusElement = xh.firstDescendantByLocalName(
+      responseElement,
+      'status',
+    );
     final status = statusElement?.innerText;
 
-    var errorElement = responseElement.findAllElements('error').firstOrNull;
-    if (errorElement == null) {
-      errorElement = responseElement.findAllElements('D:error').firstOrNull;
-    }
+    final errorElement = xh.firstDescendantByLocalName(
+      responseElement,
+      'error',
+    );
     final error = errorElement != null
         ? Error.fromXmlElement(errorElement)
         : null;
 
-    var responsedescriptionElement = responseElement
-        .findAllElements('responsedescription')
-        .firstOrNull;
-    if (responsedescriptionElement == null) {
-      responsedescriptionElement = responseElement
-          .findAllElements('D:responsedescription')
-          .firstOrNull;
-    }
+    final responsedescriptionElement = xh.firstDescendantByLocalName(
+      responseElement,
+      'responsedescription',
+    );
     final responsedescription = responsedescriptionElement?.innerText;
 
-    var locationElement = responseElement
-        .findAllElements('location')
-        .firstOrNull;
-    if (locationElement == null) {
-      locationElement = responseElement
-          .findAllElements('D:location')
-          .firstOrNull;
-    }
-    final location =
-        locationElement?.findAllElements('href').firstOrNull?.innerText ??
-        locationElement?.findAllElements('D:href').firstOrNull?.innerText;
+    final locationElement = xh.firstDescendantByLocalName(
+      responseElement,
+      'location',
+    );
+    final location = locationElement != null
+        ? xh.firstDescendantByLocalName(locationElement, 'href')?.innerText
+        : null;
 
     return Response(
       href: href,

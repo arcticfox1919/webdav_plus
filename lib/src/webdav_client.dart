@@ -99,21 +99,31 @@ abstract interface class WebdavClient {
 
   /// List directory contents using WebDAV PROPFIND
   ///
-  /// Returns a list of resources for [url], including the parent resource itself.
+  /// Returns a list of resources for [url].
+  ///
+  /// **Note:** Per WebDAV RFC 4918, the first element in the returned list
+  /// is the requested URL itself, followed by its children. If you only need
+  /// the children, use `list(url).skip(1)` or `list(url).sublist(1)`.
   Future<List<DavResource>> list(String url);
 
   /// List directory contents using WebDAV PROPFIND with depth
   ///
   /// Returns a list of resources for [url] with specified [depth]:
-  /// - 0 for single resource
-  /// - 1 for directory listing
-  /// - -1 for infinite recursion
+  /// - 0 for single resource only
+  /// - 1 for the resource itself and its direct children
+  /// - -1 for infinite recursion (resource itself and all descendants)
+  ///
+  /// **Note:** Per WebDAV RFC 4918, when depth > 0, the first element
+  /// is the requested URL itself.
   Future<List<DavResource>> listWithDepth(String url, int depth);
 
   /// List directory contents using WebDAV PROPFIND with properties
   ///
   /// Returns a list of resources for [url] with specified [depth] and [props].
   /// Additional properties in [props] will be requested from the server.
+  ///
+  /// **Note:** Per WebDAV RFC 4918, when depth > 0, the first element
+  /// is the requested URL itself.
   Future<List<DavResource>> listWithProps(
     String url,
     int depth,

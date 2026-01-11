@@ -1,6 +1,6 @@
 name: webdav_plus
 description: A feature-rich WebDAV client library for Dart and Flutter with support for locking, ACL, versioning, search, and more.
-version: 1.0.0
+version: 1.1.0
 
 # Package metadata
 homepage: https://github.com/arcticfox1919/webdav_plus

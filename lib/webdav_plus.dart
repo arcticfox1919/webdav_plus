@@ -65,7 +65,7 @@ export 'src/model/properties.dart'
 export 'src/model/sync.dart';
 export 'src/model/reports.dart';
 export 'src/model/privileges.dart';
-export 'src/model/binding.dart' hide Bind, UnBind;
+export 'src/model/binding.dart';
 
 // Exceptions
 export 'src/webdav_exception.dart';

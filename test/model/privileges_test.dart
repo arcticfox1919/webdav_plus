@@ -2,10 +2,10 @@ import 'package:test/test.dart';
 import 'package:webdav_plus/src/model/privileges.dart';
 
 void main() {
-  group('Read', () {
+  group('ReadPrivilege', () {
     group('XML Generation', () {
       test('should generate read privilege XML', () {
-        const read = Read();
+        const read = ReadPrivilege();
         final xml = read.toXml();
 
         expect(xml, equals('<D:read/>'));
@@ -14,16 +14,16 @@ void main() {
 
     group('Construction', () {
       test('should create read privilege', () {
-        const read = Read();
-        expect(read, isA<Read>());
+        const read = ReadPrivilege();
+        expect(read, isA<ReadPrivilege>());
       });
     });
   });
 
-  group('Write', () {
+  group('WritePrivilege', () {
     group('XML Generation', () {
       test('should generate write privilege XML', () {
-        const write = Write();
+        const write = WritePrivilege();
         final xml = write.toXml();
 
         expect(xml, equals('<D:write/>'));
@@ -32,16 +32,16 @@ void main() {
 
     group('Construction', () {
       test('should create write privilege', () {
-        const write = Write();
-        expect(write, isA<Write>());
+        const write = WritePrivilege();
+        expect(write, isA<WritePrivilege>());
       });
     });
   });
 
-  group('WriteProperties', () {
+  group('WritePropertiesPrivilege', () {
     group('XML Generation', () {
       test('should generate write-properties privilege XML', () {
-        const writeProperties = WriteProperties();
+        const writeProperties = WritePropertiesPrivilege();
         final xml = writeProperties.toXml();
 
         expect(xml, equals('<D:write-properties/>'));
@@ -50,16 +50,16 @@ void main() {
 
     group('Construction', () {
       test('should create write-properties privilege', () {
-        const writeProperties = WriteProperties();
-        expect(writeProperties, isA<WriteProperties>());
+        const writeProperties = WritePropertiesPrivilege();
+        expect(writeProperties, isA<WritePropertiesPrivilege>());
       });
     });
   });
 
-  group('WriteContent', () {
+  group('WriteContentPrivilege', () {
     group('XML Generation', () {
       test('should generate write-content privilege XML', () {
-        const writeContent = WriteContent();
+        const writeContent = WriteContentPrivilege();
         final xml = writeContent.toXml();
 
         expect(xml, equals('<D:write-content/>'));
@@ -68,16 +68,16 @@ void main() {
 
     group('Construction', () {
       test('should create write-content privilege', () {
-        const writeContent = WriteContent();
-        expect(writeContent, isA<WriteContent>());
+        const writeContent = WriteContentPrivilege();
+        expect(writeContent, isA<WriteContentPrivilege>());
       });
     });
   });
 
-  group('Unlock', () {
+  group('UnlockPrivilege', () {
     group('XML Generation', () {
       test('should generate unlock privilege XML', () {
-        const unlock = Unlock();
+        const unlock = UnlockPrivilege();
         final xml = unlock.toXml();
 
         expect(xml, equals('<D:unlock/>'));
@@ -86,16 +86,16 @@ void main() {
 
     group('Construction', () {
       test('should create unlock privilege', () {
-        const unlock = Unlock();
-        expect(unlock, isA<Unlock>());
+        const unlock = UnlockPrivilege();
+        expect(unlock, isA<UnlockPrivilege>());
       });
     });
   });
 
-  group('ReadAcl', () {
+  group('ReadAclPrivilege', () {
     group('XML Generation', () {
       test('should generate read-acl privilege XML', () {
-        const readAcl = ReadAcl();
+        const readAcl = ReadAclPrivilege();
         final xml = readAcl.toXml();
 
         expect(xml, equals('<D:read-acl/>'));
@@ -104,16 +104,17 @@ void main() {
 
     group('Construction', () {
       test('should create read-acl privilege', () {
-        const readAcl = ReadAcl();
-        expect(readAcl, isA<ReadAcl>());
+        const readAcl = ReadAclPrivilege();
+        expect(readAcl, isA<ReadAclPrivilege>());
       });
     });
   });
 
-  group('ReadCurrentUserPrivilegeSet', () {
+  group('ReadCurrentUserPrivilegeSetPrivilege', () {
     group('XML Generation', () {
       test('should generate read-current-user-privilege-set privilege XML', () {
-        const readCurrentUserPrivilegeSet = ReadCurrentUserPrivilegeSet();
+        const readCurrentUserPrivilegeSet =
+            ReadCurrentUserPrivilegeSetPrivilege();
         final xml = readCurrentUserPrivilegeSet.toXml();
 
         expect(xml, equals('<D:read-current-user-privilege-set/>'));
@@ -122,16 +123,20 @@ void main() {
 
     group('Construction', () {
       test('should create read-current-user-privilege-set privilege', () {
-        const readCurrentUserPrivilegeSet = ReadCurrentUserPrivilegeSet();
-        expect(readCurrentUserPrivilegeSet, isA<ReadCurrentUserPrivilegeSet>());
+        const readCurrentUserPrivilegeSet =
+            ReadCurrentUserPrivilegeSetPrivilege();
+        expect(
+          readCurrentUserPrivilegeSet,
+          isA<ReadCurrentUserPrivilegeSetPrivilege>(),
+        );
       });
     });
   });
 
-  group('WriteAcl', () {
+  group('WriteAclPrivilege', () {
     group('XML Generation', () {
       test('should generate write-acl privilege XML', () {
-        const writeAcl = WriteAcl();
+        const writeAcl = WriteAclPrivilege();
         final xml = writeAcl.toXml();
 
         expect(xml, equals('<D:write-acl/>'));
@@ -140,16 +145,16 @@ void main() {
 
     group('Construction', () {
       test('should create write-acl privilege', () {
-        const writeAcl = WriteAcl();
-        expect(writeAcl, isA<WriteAcl>());
+        const writeAcl = WriteAclPrivilege();
+        expect(writeAcl, isA<WriteAclPrivilege>());
       });
     });
   });
 
-  group('Bind', () {
+  group('BindPrivilege', () {
     group('XML Generation', () {
       test('should generate bind privilege XML', () {
-        const bind = Bind();
+        const bind = BindPrivilege();
         final xml = bind.toXml();
 
         expect(xml, equals('<D:bind/>'));
@@ -158,16 +163,16 @@ void main() {
 
     group('Construction', () {
       test('should create bind privilege', () {
-        const bind = Bind();
-        expect(bind, isA<Bind>());
+        const bind = BindPrivilege();
+        expect(bind, isA<BindPrivilege>());
       });
     });
   });
 
-  group('UnBind', () {
+  group('UnbindPrivilege', () {
     group('XML Generation', () {
       test('should generate unbind privilege XML', () {
-        const unbind = UnBind();
+        const unbind = UnbindPrivilege();
         final xml = unbind.toXml();
 
         expect(xml, equals('<D:unbind/>'));
@@ -176,16 +181,16 @@ void main() {
 
     group('Construction', () {
       test('should create unbind privilege', () {
-        const unbind = UnBind();
-        expect(unbind, isA<UnBind>());
+        const unbind = UnbindPrivilege();
+        expect(unbind, isA<UnbindPrivilege>());
       });
     });
   });
 
-  group('All', () {
+  group('AllPrivilege', () {
     group('XML Generation', () {
       test('should generate all privilege XML', () {
-        const all = All();
+        const all = AllPrivilege();
         final xml = all.toXml();
 
         expect(xml, equals('<D:all/>'));
@@ -194,16 +199,16 @@ void main() {
 
     group('Construction', () {
       test('should create all privilege', () {
-        const all = All();
-        expect(all, isA<All>());
+        const all = AllPrivilege();
+        expect(all, isA<AllPrivilege>());
       });
     });
   });
 
-  group('Authenticated', () {
+  group('AuthenticatedPrincipal', () {
     group('XML Generation', () {
       test('should generate authenticated principal XML', () {
-        const authenticated = Authenticated();
+        const authenticated = AuthenticatedPrincipal();
         final xml = authenticated.toXml();
 
         expect(xml, equals('<D:authenticated/>'));
@@ -212,16 +217,16 @@ void main() {
 
     group('Construction', () {
       test('should create authenticated principal', () {
-        const authenticated = Authenticated();
-        expect(authenticated, isA<Authenticated>());
+        const authenticated = AuthenticatedPrincipal();
+        expect(authenticated, isA<AuthenticatedPrincipal>());
       });
     });
   });
 
-  group('Unauthenticated', () {
+  group('UnauthenticatedPrincipal', () {
     group('XML Generation', () {
       test('should generate unauthenticated principal XML', () {
-        const unauthenticated = Unauthenticated();
+        const unauthenticated = UnauthenticatedPrincipal();
         final xml = unauthenticated.toXml();
 
         expect(xml, equals('<D:unauthenticated/>'));
@@ -230,16 +235,16 @@ void main() {
 
     group('Construction', () {
       test('should create unauthenticated principal', () {
-        const unauthenticated = Unauthenticated();
-        expect(unauthenticated, isA<Unauthenticated>());
+        const unauthenticated = UnauthenticatedPrincipal();
+        expect(unauthenticated, isA<UnauthenticatedPrincipal>());
       });
     });
   });
 
-  group('Self', () {
+  group('SelfPrincipal', () {
     group('XML Generation', () {
       test('should generate self principal XML', () {
-        const self = Self();
+        const self = SelfPrincipal();
         final xml = self.toXml();
 
         expect(xml, equals('<D:self/>'));
@@ -248,16 +253,16 @@ void main() {
 
     group('Construction', () {
       test('should create self principal', () {
-        const self = Self();
-        expect(self, isA<Self>());
+        const self = SelfPrincipal();
+        expect(self, isA<SelfPrincipal>());
       });
     });
   });
 
-  group('Protected', () {
+  group('ProtectedAce', () {
     group('XML Generation', () {
       test('should generate protected ACE XML', () {
-        const protected = Protected();
+        const protected = ProtectedAce();
         final xml = protected.toXml();
 
         expect(xml, equals('<D:protected/>'));
@@ -266,16 +271,16 @@ void main() {
 
     group('Construction', () {
       test('should create protected ACE', () {
-        const protected = Protected();
-        expect(protected, isA<Protected>());
+        const protected = ProtectedAce();
+        expect(protected, isA<ProtectedAce>());
       });
     });
   });
 
-  group('Inherited', () {
+  group('InheritedAce', () {
     group('XML Generation', () {
       test('should generate inherited ACE XML', () {
-        const inherited = Inherited(href: 'http://example.com/parent');
+        const inherited = InheritedAce(href: 'http://example.com/parent');
         final xml = inherited.toXml();
 
         expect(
@@ -287,7 +292,7 @@ void main() {
       });
 
       test('should generate inherited ACE XML with different href', () {
-        const inherited = Inherited(href: '/parent/resource');
+        const inherited = InheritedAce(href: '/parent/resource');
         final xml = inherited.toXml();
 
         expect(
@@ -299,14 +304,14 @@ void main() {
       });
 
       test('should handle empty href', () {
-        const inherited = Inherited(href: '');
+        const inherited = InheritedAce(href: '');
         final xml = inherited.toXml();
 
         expect(xml, equals('<D:inherited><D:href></D:href></D:inherited>'));
       });
 
       test('should handle complex href values', () {
-        const inherited = Inherited(
+        const inherited = InheritedAce(
           href: 'https://example.com/path/to/parent?query=value#fragment',
         );
         final xml = inherited.toXml();
@@ -322,8 +327,8 @@ void main() {
 
     group('Construction', () {
       test('should create inherited ACE with href', () {
-        const inherited = Inherited(href: 'test-href');
-        expect(inherited, isA<Inherited>());
+        const inherited = InheritedAce(href: 'test-href');
+        expect(inherited, isA<InheritedAce>());
         expect(inherited.href, equals('test-href'));
       });
     });
@@ -332,28 +337,28 @@ void main() {
   group('Privilege Constants', () {
     group('Standard WebDAV Privileges', () {
       test('should provide read privilege constant', () {
-        const read = Read();
+        const read = ReadPrivilege();
         expect(read.toXml(), equals('<D:read/>'));
       });
 
       test('should provide write privilege constant', () {
-        const write = Write();
+        const write = WritePrivilege();
         expect(write.toXml(), equals('<D:write/>'));
       });
 
       test('should provide all standard privileges', () {
         const privileges = <dynamic>[
-          Read(),
-          Write(),
-          WriteProperties(),
-          WriteContent(),
-          Unlock(),
-          ReadAcl(),
-          ReadCurrentUserPrivilegeSet(),
-          WriteAcl(),
-          Bind(),
-          UnBind(),
-          All(),
+          ReadPrivilege(),
+          WritePrivilege(),
+          WritePropertiesPrivilege(),
+          WriteContentPrivilege(),
+          UnlockPrivilege(),
+          ReadAclPrivilege(),
+          ReadCurrentUserPrivilegeSetPrivilege(),
+          WriteAclPrivilege(),
+          BindPrivilege(),
+          UnbindPrivilege(),
+          AllPrivilege(),
         ];
 
         for (final privilege in privileges) {
@@ -367,9 +372,9 @@ void main() {
     group('Principal Types', () {
       test('should provide all principal types', () {
         const principals = <dynamic>[
-          Authenticated(),
-          Unauthenticated(),
-          Self(),
+          AuthenticatedPrincipal(),
+          UnauthenticatedPrincipal(),
+          SelfPrincipal(),
         ];
 
         for (final principal in principals) {
@@ -382,12 +387,12 @@ void main() {
 
     group('ACE Attributes', () {
       test('should provide protected attribute', () {
-        const protected = Protected();
+        const protected = ProtectedAce();
         expect(protected.toXml(), equals('<D:protected/>'));
       });
 
       test('should provide inherited attribute with href', () {
-        const inherited = Inherited(href: '/parent');
+        const inherited = InheritedAce(href: '/parent');
         expect(inherited.toXml(), contains('<D:inherited>'));
         expect(inherited.toXml(), contains('<D:href>/parent</D:href>'));
       });
@@ -398,9 +403,9 @@ void main() {
     group('Common Privilege Sets', () {
       test('should combine read privileges', () {
         const privileges = <dynamic>[
-          Read(),
-          ReadAcl(),
-          ReadCurrentUserPrivilegeSet(),
+          ReadPrivilege(),
+          ReadAclPrivilege(),
+          ReadCurrentUserPrivilegeSetPrivilege(),
         ];
         final xmlList = privileges.map((p) => p.toXml()).toList();
 
@@ -411,10 +416,10 @@ void main() {
 
       test('should combine write privileges', () {
         const privileges = <dynamic>[
-          Write(),
-          WriteProperties(),
-          WriteContent(),
-          WriteAcl(),
+          WritePrivilege(),
+          WritePropertiesPrivilege(),
+          WriteContentPrivilege(),
+          WriteAclPrivilege(),
         ];
         final xmlList = privileges.map((p) => p.toXml()).toList();
 
@@ -425,7 +430,7 @@ void main() {
       });
 
       test('should combine binding privileges', () {
-        const privileges = <dynamic>[Bind(), UnBind()];
+        const privileges = <dynamic>[BindPrivilege(), UnbindPrivilege()];
         final xmlList = privileges.map((p) => p.toXml()).toList();
 
         expect(xmlList, contains('<D:bind/>'));
@@ -433,7 +438,7 @@ void main() {
       });
 
       test('should represent all privileges', () {
-        const all = All();
+        const all = AllPrivilege();
         expect(all.toXml(), equals('<D:all/>'));
       });
     });
@@ -441,9 +446,9 @@ void main() {
     group('Principal Combinations', () {
       test('should represent different principal types', () {
         const principals = <dynamic>[
-          Authenticated(),
-          Unauthenticated(),
-          Self(),
+          AuthenticatedPrincipal(),
+          UnauthenticatedPrincipal(),
+          SelfPrincipal(),
         ];
         final xmlList = principals.map((p) => p.toXml()).toList();
 
@@ -459,17 +464,17 @@ void main() {
     group('Self-Closing Tags', () {
       test('should generate self-closing XML tags for simple privileges', () {
         const simplePrivileges = <dynamic>[
-          Read(),
-          Write(),
-          WriteProperties(),
-          WriteContent(),
-          Unlock(),
-          ReadAcl(),
-          ReadCurrentUserPrivilegeSet(),
-          WriteAcl(),
-          Bind(),
-          UnBind(),
-          All(),
+          ReadPrivilege(),
+          WritePrivilege(),
+          WritePropertiesPrivilege(),
+          WriteContentPrivilege(),
+          UnlockPrivilege(),
+          ReadAclPrivilege(),
+          ReadCurrentUserPrivilegeSetPrivilege(),
+          WriteAclPrivilege(),
+          BindPrivilege(),
+          UnbindPrivilege(),
+          AllPrivilege(),
         ];
 
         for (final privilege in simplePrivileges) {
@@ -480,10 +485,10 @@ void main() {
 
       test('should generate self-closing XML tags for principals', () {
         const principals = <dynamic>[
-          Authenticated(),
-          Unauthenticated(),
-          Self(),
-          Protected(),
+          AuthenticatedPrincipal(),
+          UnauthenticatedPrincipal(),
+          SelfPrincipal(),
+          ProtectedAce(),
         ];
 
         for (final principal in principals) {
@@ -493,7 +498,7 @@ void main() {
       });
 
       test('should generate proper XML structure for inherited', () {
-        const inherited = Inherited(href: '/test');
+        const inherited = InheritedAce(href: '/test');
         final xml = inherited.toXml();
 
         expect(
@@ -506,21 +511,21 @@ void main() {
     group('Namespace Prefix', () {
       test('should use DAV namespace prefix consistently', () {
         const items = <dynamic>[
-          Read(),
-          Write(),
-          WriteProperties(),
-          WriteContent(),
-          Unlock(),
-          ReadAcl(),
-          ReadCurrentUserPrivilegeSet(),
-          WriteAcl(),
-          Bind(),
-          UnBind(),
-          All(),
-          Authenticated(),
-          Unauthenticated(),
-          Self(),
-          Protected(),
+          ReadPrivilege(),
+          WritePrivilege(),
+          WritePropertiesPrivilege(),
+          WriteContentPrivilege(),
+          UnlockPrivilege(),
+          ReadAclPrivilege(),
+          ReadCurrentUserPrivilegeSetPrivilege(),
+          WriteAclPrivilege(),
+          BindPrivilege(),
+          UnbindPrivilege(),
+          AllPrivilege(),
+          AuthenticatedPrincipal(),
+          UnauthenticatedPrincipal(),
+          SelfPrincipal(),
+          ProtectedAce(),
         ];
 
         for (final item in items) {
@@ -530,7 +535,7 @@ void main() {
       });
 
       test('should use DAV namespace prefix for inherited href', () {
-        const inherited = Inherited(href: '/test');
+        const inherited = InheritedAce(href: '/test');
         final xml = inherited.toXml();
 
         expect(xml, contains('<D:inherited>'));

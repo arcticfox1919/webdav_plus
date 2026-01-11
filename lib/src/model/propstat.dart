@@ -1,6 +1,7 @@
 import 'package:xml/xml.dart';
 import 'propfind.dart'; // for Prop class
 import 'error.dart';
+import '../parser/xml_helpers.dart' as xh;
 
 /// Represents a propstat element
 ///
@@ -32,40 +33,34 @@ class Propstat {
 
   /// Parse propstat from XML element
   static Propstat fromXmlElement(XmlElement propstatElement) {
-    var propElement = propstatElement.findAllElements('prop').firstOrNull;
-    if (propElement == null) {
-      propElement = propstatElement.findAllElements('D:prop').firstOrNull;
-    }
+    // Use xml_helpers to find elements by local name (ignores namespace prefix)
+    final propElement = xh.firstDescendantByLocalName(propstatElement, 'prop');
     if (propElement == null) {
       throw FormatException('Propstat element missing prop');
     }
     final prop = Prop.fromXmlElement(propElement);
 
-    var statusElement = propstatElement.findAllElements('status').firstOrNull;
-    if (statusElement == null) {
-      statusElement = propstatElement.findAllElements('D:status').firstOrNull;
-    }
+    final statusElement = xh.firstDescendantByLocalName(
+      propstatElement,
+      'status',
+    );
     if (statusElement == null) {
       throw FormatException('Propstat element missing status');
     }
     final status = statusElement.innerText;
 
-    var errorElement = propstatElement.findAllElements('error').firstOrNull;
-    if (errorElement == null) {
-      errorElement = propstatElement.findAllElements('D:error').firstOrNull;
-    }
+    final errorElement = xh.firstDescendantByLocalName(
+      propstatElement,
+      'error',
+    );
     final error = errorElement != null
         ? Error.fromXmlElement(errorElement)
         : null;
 
-    var responsedescriptionElement = propstatElement
-        .findAllElements('responsedescription')
-        .firstOrNull;
-    if (responsedescriptionElement == null) {
-      responsedescriptionElement = propstatElement
-          .findAllElements('D:responsedescription')
-          .firstOrNull;
-    }
+    final responsedescriptionElement = xh.firstDescendantByLocalName(
+      propstatElement,
+      'responsedescription',
+    );
     final responsedescription = responsedescriptionElement?.innerText;
 
     return Propstat(

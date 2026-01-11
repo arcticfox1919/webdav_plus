@@ -1,4 +1,5 @@
 import 'package:xml/xml.dart';
+import '../parser/xml_helpers.dart' as xh;
 
 /// WebDAV Lock Information Element
 ///
@@ -57,38 +58,30 @@ class Lockinfo {
   /// Parse Lockinfo from XML element
   static Lockinfo fromXmlElement(XmlElement lockinfoElement) {
     // Parse lockscope
-    var lockscopeElement = lockinfoElement
-        .findAllElements('lockscope')
-        .firstOrNull;
-    if (lockscopeElement == null) {
-      lockscopeElement = lockinfoElement
-          .findAllElements('D:lockscope')
-          .firstOrNull;
-    }
+    final lockscopeElement = xh.firstDescendantByLocalName(
+      lockinfoElement,
+      'lockscope',
+    );
     if (lockscopeElement == null) {
       throw FormatException('Lockinfo element missing lockscope');
     }
     final lockscope = Lockscope.fromXmlElement(lockscopeElement);
 
     // Parse locktype
-    var locktypeElement = lockinfoElement
-        .findAllElements('locktype')
-        .firstOrNull;
-    if (locktypeElement == null) {
-      locktypeElement = lockinfoElement
-          .findAllElements('D:locktype')
-          .firstOrNull;
-    }
+    final locktypeElement = xh.firstDescendantByLocalName(
+      lockinfoElement,
+      'locktype',
+    );
     if (locktypeElement == null) {
       throw FormatException('Lockinfo element missing locktype');
     }
     final locktype = Locktype.fromXmlElement(locktypeElement);
 
     // Parse owner (optional)
-    var ownerElement = lockinfoElement.findAllElements('owner').firstOrNull;
-    if (ownerElement == null) {
-      ownerElement = lockinfoElement.findAllElements('D:owner').firstOrNull;
-    }
+    final ownerElement = xh.firstDescendantByLocalName(
+      lockinfoElement,
+      'owner',
+    );
     final owner = ownerElement != null
         ? Owner.fromXmlElement(ownerElement)
         : null;
@@ -153,14 +146,10 @@ class Lockscope {
   /// Parse Lockscope from XML element
   static Lockscope fromXmlElement(XmlElement lockscopeElement) {
     // Check for exclusive element
-    var exclusiveElement = lockscopeElement
-        .findAllElements('exclusive')
-        .firstOrNull;
-    if (exclusiveElement == null) {
-      exclusiveElement = lockscopeElement
-          .findAllElements('D:exclusive')
-          .firstOrNull;
-    }
+    final exclusiveElement = xh.firstDescendantByLocalName(
+      lockscopeElement,
+      'exclusive',
+    );
     final exclusive = exclusiveElement != null;
 
     return Lockscope(exclusive: exclusive);

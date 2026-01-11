@@ -68,6 +68,8 @@ dart pub get
 
 ### Basic Operations
 
+> For a complete CRUD example, see [example/simple.dart](example/simple.dart).
+
 ```dart
 import 'package:webdav_plus/webdav_plus.dart';
 

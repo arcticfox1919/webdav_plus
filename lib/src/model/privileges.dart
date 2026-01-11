@@ -4,115 +4,115 @@
 /// as defined in RFC 3744 (WebDAV Access Control Protocol).
 
 /// Represents a read privilege
-class Read {
-  const Read();
+class ReadPrivilege {
+  const ReadPrivilege();
 
   String toXml() => '<D:read/>';
 }
 
 /// Represents a write privilege
-class Write {
-  const Write();
+class WritePrivilege {
+  const WritePrivilege();
 
   String toXml() => '<D:write/>';
 }
 
 /// Represents a write-properties privilege
-class WriteProperties {
-  const WriteProperties();
+class WritePropertiesPrivilege {
+  const WritePropertiesPrivilege();
 
   String toXml() => '<D:write-properties/>';
 }
 
 /// Represents a write-content privilege
-class WriteContent {
-  const WriteContent();
+class WriteContentPrivilege {
+  const WriteContentPrivilege();
 
   String toXml() => '<D:write-content/>';
 }
 
 /// Represents an unlock privilege
-class Unlock {
-  const Unlock();
+class UnlockPrivilege {
+  const UnlockPrivilege();
 
   String toXml() => '<D:unlock/>';
 }
 
 /// Represents a read-acl privilege
-class ReadAcl {
-  const ReadAcl();
+class ReadAclPrivilege {
+  const ReadAclPrivilege();
 
   String toXml() => '<D:read-acl/>';
 }
 
 /// Represents a read-current-user-privilege-set privilege
-class ReadCurrentUserPrivilegeSet {
-  const ReadCurrentUserPrivilegeSet();
+class ReadCurrentUserPrivilegeSetPrivilege {
+  const ReadCurrentUserPrivilegeSetPrivilege();
 
   String toXml() => '<D:read-current-user-privilege-set/>';
 }
 
 /// Represents a write-acl privilege
-class WriteAcl {
-  const WriteAcl();
+class WriteAclPrivilege {
+  const WriteAclPrivilege();
 
   String toXml() => '<D:write-acl/>';
 }
 
 /// Represents a bind privilege
-class Bind {
-  const Bind();
+class BindPrivilege {
+  const BindPrivilege();
 
   String toXml() => '<D:bind/>';
 }
 
 /// Represents an unbind privilege
-class UnBind {
-  const UnBind();
+class UnbindPrivilege {
+  const UnbindPrivilege();
 
   String toXml() => '<D:unbind/>';
 }
 
 /// Represents an all privilege (aggregate of all other privileges)
-class All {
-  const All();
+class AllPrivilege {
+  const AllPrivilege();
 
   String toXml() => '<D:all/>';
 }
 
 /// Represents an authenticated principal
-class Authenticated {
-  const Authenticated();
+class AuthenticatedPrincipal {
+  const AuthenticatedPrincipal();
 
   String toXml() => '<D:authenticated/>';
 }
 
 /// Represents an unauthenticated principal
-class Unauthenticated {
-  const Unauthenticated();
+class UnauthenticatedPrincipal {
+  const UnauthenticatedPrincipal();
 
   String toXml() => '<D:unauthenticated/>';
 }
 
 /// Represents a self principal
-class Self {
-  const Self();
+class SelfPrincipal {
+  const SelfPrincipal();
 
   String toXml() => '<D:self/>';
 }
 
-/// Represents a protected ACE
-class Protected {
-  const Protected();
+/// Represents a protected ACE marker
+class ProtectedAce {
+  const ProtectedAce();
 
   String toXml() => '<D:protected/>';
 }
 
-/// Represents an inherited ACE
-class Inherited {
+/// Represents an inherited ACE marker
+class InheritedAce {
   final String href;
 
-  const Inherited({required this.href});
+  const InheritedAce({required this.href});
 
   String toXml() {
     return '<D:inherited><D:href>$href</D:href></D:inherited>';

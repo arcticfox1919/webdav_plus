@@ -29,17 +29,22 @@ DavAcl parseAclFromMultistatusXml(String xmlString, String resourceUrl) {
         if (href != null && href.isNotEmpty) {
           principal = href;
         } else {
-          if (principalEl.findElements('all').isNotEmpty ||
-              principalEl.findElements('D:all').isNotEmpty) {
+          if (xh.firstDescendantByLocalName(principalEl, 'all') != null) {
             principal = 'DAV:all';
-          } else if (principalEl.findElements('authenticated').isNotEmpty ||
-              principalEl.findElements('D:authenticated').isNotEmpty) {
+          } else if (xh.firstDescendantByLocalName(
+                principalEl,
+                'authenticated',
+              ) !=
+              null) {
             principal = 'DAV:authenticated';
-          } else if (principalEl.findElements('unauthenticated').isNotEmpty ||
-              principalEl.findElements('D:unauthenticated').isNotEmpty) {
+          } else if (xh.firstDescendantByLocalName(
+                principalEl,
+                'unauthenticated',
+              ) !=
+              null) {
             principal = 'DAV:unauthenticated';
-          } else if (principalEl.findElements('self').isNotEmpty ||
-              principalEl.findElements('D:self').isNotEmpty) {
+          } else if (xh.firstDescendantByLocalName(principalEl, 'self') !=
+              null) {
             principal = 'DAV:self';
           }
         }
@@ -59,18 +64,20 @@ DavAcl parseAclFromMultistatusXml(String xmlString, String resourceUrl) {
         }
       }
 
-      final isProtected = aceEl.findElements('protected').isNotEmpty ||
-          aceEl.findElements('D:protected').isNotEmpty;
-      final isInherited = aceEl.findElements('inherited').isNotEmpty ||
-          aceEl.findElements('D:inherited').isNotEmpty;
+      final isProtected =
+          xh.firstDescendantByLocalName(aceEl, 'protected') != null;
+      final isInherited =
+          xh.firstDescendantByLocalName(aceEl, 'inherited') != null;
 
-      aces.add(DavAce(
-        principal: principal,
-        grant: isGrant,
-        privileges: privileges,
-        inherited: isInherited,
-        protected: isProtected,
-      ));
+      aces.add(
+        DavAce(
+          principal: principal,
+          grant: isGrant,
+          privileges: privileges,
+          inherited: isInherited,
+          protected: isProtected,
+        ),
+      );
     }
 
     return DavAcl(aces: aces, resourceUrl: resourceUrl);

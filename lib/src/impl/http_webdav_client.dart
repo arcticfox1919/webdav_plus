@@ -17,7 +17,6 @@ import '../report/webdav_report.dart';
 import '../model/propfind.dart';
 import '../auth/authentication_handler.dart';
 import '../model/multistatus.dart';
-// import '../model/response.dart';
 import '../model/search.dart';
 import '../model/proppatch.dart';
 import '../model/lockinfo.dart';
@@ -2070,113 +2069,6 @@ class HttpWebdavClient implements WebdavClient {
     return utf8.decode(bytes, allowMalformed: true);
   }
 
-  // Deprecated: use ms_parser.parseMultistatusResources
-
-  // Parse ACL from multistatus XML into DavAcl
-  DavAcl _parseAclFromMultistatusXml(String xmlString, String resourceUrl) {
-    try {
-      final doc = xml.XmlDocument.parse(xmlString);
-      final multistatus = doc.rootElement;
-      final responseEl = multistatus.findAllElements('response').isNotEmpty
-          ? multistatus.findAllElements('response').first
-          : multistatus.findAllElements('D:response').firstOrNull;
-      if (responseEl == null) return DavAcl(aces: [], resourceUrl: resourceUrl);
-
-      // Find first prop containing ACL
-      final propEls = responseEl.findAllElements('prop').isNotEmpty
-          ? responseEl.findAllElements('prop')
-          : responseEl.findAllElements('D:prop');
-      xml.XmlElement? aclEl;
-      for (final propEl in propEls) {
-        aclEl = propEl.findElements('acl').isNotEmpty
-            ? propEl.findElements('acl').first
-            : propEl.findElements('D:acl').firstOrNull;
-        if (aclEl != null) break;
-      }
-      if (aclEl == null) return DavAcl(aces: [], resourceUrl: resourceUrl);
-
-      final aces = <DavAce>[];
-      final aceEls = aclEl.findElements('ace').isNotEmpty
-          ? aclEl.findElements('ace')
-          : aclEl.findElements('D:ace');
-      for (final aceEl in aceEls) {
-        // principal
-        String principal = 'unknown';
-        final principalEl = aceEl.findElements('principal').isNotEmpty
-            ? aceEl.findElements('principal').first
-            : aceEl.findElements('D:principal').firstOrNull;
-        if (principalEl != null) {
-          final hrefEl = principalEl.findElements('href').isNotEmpty
-              ? principalEl.findElements('href').first
-              : principalEl.findElements('D:href').firstOrNull;
-          if (hrefEl != null) {
-            principal = hrefEl.innerText.trim();
-          } else {
-            if (principalEl.findElements('all').isNotEmpty ||
-                principalEl.findElements('D:all').isNotEmpty) {
-              principal = 'DAV:all';
-            } else if (principalEl.findElements('authenticated').isNotEmpty ||
-                principalEl.findElements('D:authenticated').isNotEmpty) {
-              principal = 'DAV:authenticated';
-            } else if (principalEl.findElements('unauthenticated').isNotEmpty ||
-                principalEl.findElements('D:unauthenticated').isNotEmpty) {
-              principal = 'DAV:unauthenticated';
-            } else if (principalEl.findElements('self').isNotEmpty ||
-                principalEl.findElements('D:self').isNotEmpty) {
-              principal = 'DAV:self';
-            }
-          }
-        }
-
-        // grant/deny and privileges
-        bool isGrant = false;
-        final grantEl = aceEl.findElements('grant').isNotEmpty
-            ? aceEl.findElements('grant').first
-            : aceEl.findElements('D:grant').firstOrNull;
-        final denyEl = aceEl.findElements('deny').isNotEmpty
-            ? aceEl.findElements('deny').first
-            : aceEl.findElements('D:deny').firstOrNull;
-        isGrant = grantEl != null && denyEl == null;
-        final privileges = <String>{};
-        final container = grantEl ?? denyEl;
-        if (container != null) {
-          final privilegeEls = container.findAllElements('privilege').isNotEmpty
-              ? container.findAllElements('privilege')
-              : container.findAllElements('D:privilege');
-          for (final pEl in privilegeEls) {
-            // Take the local name of the first child element under privilege
-            final child = pEl.children.whereType<xml.XmlElement>().firstOrNull;
-            if (child != null) {
-              privileges.add(child.name.local);
-            }
-          }
-        }
-
-        // flags
-        final isProtected =
-            aceEl.findElements('protected').isNotEmpty ||
-            aceEl.findElements('D:protected').isNotEmpty;
-        final isInherited =
-            aceEl.findElements('inherited').isNotEmpty ||
-            aceEl.findElements('D:inherited').isNotEmpty;
-
-        aces.add(
-          DavAce(
-            principal: principal,
-            grant: isGrant,
-            privileges: privileges,
-            inherited: isInherited,
-            protected: isProtected,
-          ),
-        );
-      }
-
-      return DavAcl(aces: aces, resourceUrl: resourceUrl);
-    } catch (_) {
-      return DavAcl(aces: [], resourceUrl: resourceUrl);
-    }
-  }
-
   // Resolve a specific version by first locating version-history like Java implementation
   Future<Uint8List> _getSpecificVersion(String url, String version) async {
     try {
@@ -2540,9 +2432,7 @@ class HttpWebdavClient implements WebdavClient {
     try {
       final doc = xml.XmlDocument.parse(xmlString);
       final versions = <String>[];
-      final hrefEls = doc.findAllElements('href').isNotEmpty
-          ? doc.findAllElements('href')
-          : doc.findAllElements('D:href');
+      final hrefEls = xh.descendantsByLocalName(doc, 'href');
       for (final h in hrefEls) {
         final v = h.innerText.trim();
         if (v.isNotEmpty) versions.add(v);

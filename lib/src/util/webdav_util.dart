@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:xml/xml.dart' as xml;
+import '../parser/xml_helpers.dart' as xh;
 
 /// Utility class for WebDAV operations, date parsing, XML handling, and other common tasks.
 ///
@@ -285,14 +286,10 @@ class WebDAVUtil {
   static String? parseLockToken(String lockDiscoveryXml) {
     try {
       final doc = xml.XmlDocument.parse(lockDiscoveryXml);
-      // Accept both qualified and unqualified DAV prefix
-      final lockTokenEl = doc.findAllElements('locktoken').isNotEmpty
-          ? doc.findAllElements('locktoken').first
-          : doc.findAllElements('D:locktoken').firstOrNull;
+      // Use local name matching for namespace-agnostic parsing
+      final lockTokenEl = xh.firstDescendantByLocalName(doc, 'locktoken');
       if (lockTokenEl == null) return null;
-      final hrefEl = lockTokenEl.findElements('href').isNotEmpty
-          ? lockTokenEl.findElements('href').first
-          : lockTokenEl.findElements('D:href').firstOrNull;
+      final hrefEl = xh.firstDescendantByLocalName(lockTokenEl, 'href');
       return hrefEl?.innerText;
     } catch (_) {
       return null;
@@ -336,8 +333,10 @@ class WebDAVUtil {
   }
 
   /// Build a PROPFIND prop body for a set of DAV properties (no values)
-  static String buildPropfindXml(Set<String> davProps,
-      {Map<String, String>? customProps}) {
+  static String buildPropfindXml(
+    Set<String> davProps, {
+    Map<String, String>? customProps,
+  }) {
     final buffer = StringBuffer();
     buffer.writeln('<?xml version="1.0" encoding="utf-8"?>');
     buffer.writeln('<D:propfind xmlns:D="DAV:">');
@@ -362,8 +361,10 @@ class WebDAVUtil {
   }
 
   /// Build a PROPPATCH body from add/remove properties
-  static String buildProppatchXml(
-      {Map<String, String>? addProps, List<String>? removeProps}) {
+  static String buildProppatchXml({
+    Map<String, String>? addProps,
+    List<String>? removeProps,
+  }) {
     final addMap = addProps ?? const <String, String>{};
     final removeList = removeProps ?? const <String>[];
 
@@ -375,7 +376,8 @@ class WebDAVUtil {
       buffer.writeln('    <D:prop>');
       for (final entry in addMap.entries) {
         buffer.writeln(
-            '      <S:${entry.key} xmlns:S="SAR:">${entry.value}</S:${entry.key}>');
+          '      <S:${entry.key} xmlns:S="SAR:">${entry.value}</S:${entry.key}>',
+        );
       }
       buffer.writeln('    </D:prop>');
       buffer.writeln('  </D:set>');

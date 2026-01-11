@@ -1,5 +1,6 @@
 import 'package:xml/xml.dart';
 import 'response.dart';
+import '../parser/xml_helpers.dart' as xh;
 
 /// WebDAV Multistatus Response
 ///
@@ -63,23 +64,22 @@ class Multistatus {
 
     final responses = <Response>[];
 
-    // Look for response elements with DAV: namespace or any namespace
-    var responseElements = multistatusElement.findAllElements('response');
-    if (responseElements.isEmpty) {
-      responseElements = multistatusElement.findAllElements('D:response');
-    }
+    // Use xml_helpers to find elements by local name (ignores namespace prefix)
+    // WebDAV servers may use different namespace prefixes: none, 'D:', 'd:', etc.
+    final responseElements = xh.descendantsByLocalName(
+      multistatusElement,
+      'response',
+    );
 
     for (final responseElement in responseElements) {
       responses.add(Response.fromXmlElement(responseElement));
     }
 
     // Look for responsedescription element
-    var responsedescriptionElement = multistatusElement
-        .findAllElements('responsedescription')
-        .firstOrNull;
-    responsedescriptionElement ??= multistatusElement
-        .findAllElements('D:responsedescription')
-        .firstOrNull;
+    final responsedescriptionElement = xh.firstDescendantByLocalName(
+      multistatusElement,
+      'responsedescription',
+    );
     final responsedescription = responsedescriptionElement?.innerText;
 
     return Multistatus(
