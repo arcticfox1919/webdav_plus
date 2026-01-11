@@ -411,7 +411,7 @@ try {
 
 ## Compatibility
 
-- **Dart SDK**: >= 3.5.0
+- **Dart SDK**: >= 3.8.0
 - **Flutter**: All platforms (iOS, Android, Web, Desktop)
 - **Standards**: RFC 4918, RFC 3744, RFC 3253, RFC 5323, RFC 6578, RFC 4331
 
@@ -419,6 +419,4 @@ try {
 
 MIT License - see [LICENSE](LICENSE) for details.
 
-## Contributing
 
-Contributions are welcome! Please feel free to submit issues and pull requests.
