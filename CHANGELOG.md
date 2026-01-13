@@ -1,3 +1,7 @@
+## 1.2.1
+
+* Lowered `meta` package dependency to ^1.16.0 for broader compatibility
+
 ## 1.2.0
 
 * Added `baseUrl` parameter to constructors for cleaner API with relative paths
