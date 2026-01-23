@@ -1,3 +1,9 @@
+## 1.2.2
+
+* Parse HTTP date formats via `http_parser` for `getlastmodified`
+* Fix `resourcetype` parsing to detect collections correctly
+* Always request `resourcetype` in `listWithProps` to improve directory detection
+
 ## 1.2.1
 
 * Lowered `meta` package dependency to ^1.16.0 for broader compatibility
