@@ -2,8 +2,8 @@ import 'dart:typed_data';
 import 'dart:convert';
 import 'package:webdav_plus/webdav_plus.dart';
 
-/// Example demonstrating domain authentication and advanced WebDAV features
-/// This example shows how to use the enhanced WebDAV client with NTLM domain authentication
+/// Example demonstrating domain credentials and advanced WebDAV features
+/// This example shows how to use the WebDAV client with Basic auth using domain\username
 Future<void> main() async {
   // Create a WebDAV client instance
   final client = WebdavClient();
@@ -13,8 +13,8 @@ Future<void> main() async {
     print('=== Basic Authentication Example ===');
     client.setCredentials('username', 'password', isPreemptive: true);
 
-    // Example 2: Domain authentication (NEW FEATURE)
-    print('=== Domain Authentication Example ===');
+    // Example 2: Domain credentials with Basic auth (NEW FEATURE)
+    print('=== Domain Credentials Example ===');
     client.setCredentialsWithDomain(
       'username', // Username
       'password', // Password
@@ -23,11 +23,11 @@ Future<void> main() async {
       isPreemptive: true, // Enable preemptive auth for better performance
     );
 
-    print('Domain authentication configured successfully!');
+    print('Domain credentials configured successfully!');
     print('Username will be sent as: COMPANYDOMAIN\\username');
     print('Workstation header will be set to: WORKSTATION01');
 
-    // Example 3: Connect to a WebDAV server with domain auth
+    // Example 3: Connect to a WebDAV server with domain credentials
     const serverUrl = 'https://webdav.example.com/files/';
 
     // List directory contents

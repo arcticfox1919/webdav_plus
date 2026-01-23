@@ -49,16 +49,11 @@ void main() async {
 /// Example implementation of NTLM authentication handler
 /// This is a placeholder - real implementation would use an NTLM library
 class ExampleNTLMHandler extends NTLMAuthenticationHandler {
-  final String domain;
-  final String username;
-  final String password;
-  final String workstation;
-
   ExampleNTLMHandler(
-    this.domain,
-    this.username,
-    this.password,
-    this.workstation,
+    String domain,
+    String username,
+    String password,
+    String workstation,
   ) : super(
         domain: domain,
         username: username,
@@ -86,15 +81,15 @@ class ExampleNTLMHandler extends NTLMAuthenticationHandler {
 
   @override
   Future<String?> handleChallenge(
-    String requestUrl,
-    HttpRequest challengeRequest,
+    String challenge,
+    HttpRequest request,
   ) async {
     // This is where you would implement NTLM challenge-response
-    print('NTLM Challenge received for: $requestUrl');
+    print('NTLM challenge received: $challenge');
     print('Domain: $domain, User: $username, Workstation: $workstation');
 
     // In a real implementation, you would:
-    // 1. Parse the challenge from challengeRequest.headers
+    // 1. Parse the challenge from request.headers
     // 2. Generate appropriate NTLM response using createType1Message and createType3Message
     // 3. Return the Authorization header value
 
@@ -115,7 +110,7 @@ class CustomOAuthHandler implements AuthenticationHandler {
   String get schemeName => 'Bearer';
 
   @override
-  bool canHandle(String scheme) => scheme.toLowerCase() == 'bearer';
+  bool canHandle(String scheme) => scheme.toLowerCase().contains('bearer');
 
   @override
   String? getPreemptiveAuth(HttpRequest request) {
@@ -124,11 +119,11 @@ class CustomOAuthHandler implements AuthenticationHandler {
 
   @override
   Future<String?> handleChallenge(
-    String requestUrl,
-    HttpRequest challengeRequest,
+    String challenge,
+    HttpRequest request,
   ) async {
     // Handle OAuth token refresh if needed
-    print('OAuth challenge received for: $requestUrl');
+    print('OAuth challenge received: $challenge');
 
     // In a real implementation, you might refresh the token here
     // For now, return the same token
