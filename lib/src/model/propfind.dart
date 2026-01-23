@@ -151,7 +151,15 @@ class Prop {
       if (namespace == 'DAV:' || namespace == null) {
         // Standard WebDAV property
         properties.add(localName);
-        if (value.isNotEmpty) {
+        if (localName == 'resourcetype') {
+          final hasCollection = child
+              .descendants
+              .whereType<XmlElement>()
+              .any((node) => node.name.local == 'collection');
+          if (hasCollection) {
+            customProperties[localName] = 'collection';
+          }
+        } else if (value.isNotEmpty) {
           customProperties[localName] = value;
         }
       } else {

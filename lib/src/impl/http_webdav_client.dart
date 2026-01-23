@@ -220,7 +220,8 @@ class HttpWebdavClient implements WebdavClient {
     int depth,
     Set<String> props,
   ) {
-    Propfind propfind = Propfind(prop: Prop(properties: props));
+    final propsWithResourceType = <String>{...props, 'resourcetype'};
+    Propfind propfind = Propfind(prop: Prop(properties: propsWithResourceType));
     return _propfind(url, depth, propfind);
   }
 

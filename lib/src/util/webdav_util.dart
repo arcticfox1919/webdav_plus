@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:http_parser/http_parser.dart';
 import 'package:xml/xml.dart' as xml;
 import '../parser/xml_helpers.dart' as xh;
 
@@ -38,7 +39,6 @@ class WebDAVUtil {
     if (value == null || value.isEmpty) {
       return null;
     }
-
     // Try ISO 8601 format first (most common)
     try {
       return DateTime.parse(value);
@@ -46,9 +46,8 @@ class WebDAVUtil {
       // Ignore and try other formats
     }
 
-    // Try RFC 2822 format
     try {
-      return DateTime.parse(value.replaceAll('GMT', 'Z'));
+      return parseHttpDate(value);
     } catch (e) {
       // Ignore and continue
     }
@@ -56,6 +55,7 @@ class WebDAVUtil {
     // If all parsing fails, return null
     return null;
   }
+
 
   /// Format a DateTime for WebDAV requests (ISO 8601 format)
   static String formatDate(DateTime date) {
