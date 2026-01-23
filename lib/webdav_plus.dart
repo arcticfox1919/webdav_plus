@@ -31,7 +31,7 @@
 /// // Create a directory
 /// await client.createDirectory('https://webdav.example.com/newdir/');
 /// ```
-library webdav_plus;
+library;
 
 // Core interfaces
 export 'src/webdav_client.dart';

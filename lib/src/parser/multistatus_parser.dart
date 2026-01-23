@@ -3,7 +3,6 @@ import '../model/response.dart' as model;
 import '../dav_resource.dart';
 import '../util/webdav_util.dart';
 import '../webdav_exception.dart';
-import 'xml_helpers.dart' as xh;
 
 /// Parse WebDAV multistatus XML into a list of DavResource
 List<DavResource> parseMultistatusResources(String xmlString) {

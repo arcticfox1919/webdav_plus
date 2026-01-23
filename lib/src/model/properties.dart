@@ -4,6 +4,7 @@
 /// as defined in RFC 4918 and related specifications. These properties
 /// provide metadata about WebDAV resources including content information,
 /// access control, locking, and resource organization.
+library;
 
 /// WebDAV Resourcetype Property
 ///

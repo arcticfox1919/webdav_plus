@@ -244,16 +244,11 @@ abstract class CustomAuthenticationHandler implements AuthenticationHandler {
 /// ```
 class ExampleNTLMHandler extends NTLMAuthenticationHandler {
   ExampleNTLMHandler({
-    required String username,
-    required String password,
-    required String domain,
-    required String workstation,
-  }) : super(
-         username: username,
-         password: password,
-         domain: domain,
-         workstation: workstation,
-       );
+    required super.username,
+    required super.password,
+    required super.domain,
+    required super.workstation,
+  });
 
   @override
   String createType1Message() {

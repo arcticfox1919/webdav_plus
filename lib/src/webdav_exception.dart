@@ -2,6 +2,7 @@
 ///
 /// This file defines all the exception types used throughout the WebDAV2 library
 /// to provide meaningful error information for different failure scenarios.
+library;
 
 import 'model/error.dart';
 
@@ -96,16 +97,11 @@ class WebDAVException implements Exception {
 /// Exception thrown when authentication fails
 class WebDAVAuthenticationException extends WebDAVException {
   const WebDAVAuthenticationException(
-    String message, {
-    int? statusCode,
-    String? responseBody,
-    Object? cause,
-  }) : super(
-         message,
-         statusCode: statusCode,
-         responseBody: responseBody,
-         cause: cause,
-       );
+    super.message, {
+    super.statusCode,
+    super.responseBody,
+    super.cause,
+  });
 
   /// Returns true if this is an authentication error
   bool get isAuthenticationError => true;
@@ -114,134 +110,89 @@ class WebDAVAuthenticationException extends WebDAVException {
 /// Exception thrown when a resource is not found (404)
 class WebDAVNotFoundException extends WebDAVException {
   const WebDAVNotFoundException(
-    String message, {
-    int? statusCode,
-    String? responseBody,
-    Object? cause,
-  }) : super(
-         message,
-         statusCode: statusCode,
-         responseBody: responseBody,
-         cause: cause,
-       );
+    super.message, {
+    super.statusCode,
+    super.responseBody,
+    super.cause,
+  });
 }
 
 /// Exception thrown when access is forbidden (403)
 class WebDAVForbiddenException extends WebDAVException {
   const WebDAVForbiddenException(
-    String message, {
-    int? statusCode,
-    String? responseBody,
-    Object? cause,
-  }) : super(
-         message,
-         statusCode: statusCode,
-         responseBody: responseBody,
-         cause: cause,
-       );
+    super.message, {
+    super.statusCode,
+    super.responseBody,
+    super.cause,
+  });
 }
 
 /// Exception thrown when a resource already exists (409)
 class WebDAVConflictException extends WebDAVException {
   const WebDAVConflictException(
-    String message, {
-    int? statusCode,
-    String? responseBody,
-    Object? cause,
-  }) : super(
-         message,
-         statusCode: statusCode,
-         responseBody: responseBody,
-         cause: cause,
-       );
+    super.message, {
+    super.statusCode,
+    super.responseBody,
+    super.cause,
+  });
 }
 
 /// Exception thrown for network-related errors
 class WebDAVNetworkException extends WebDAVException {
   const WebDAVNetworkException(
-    String message, {
-    int? statusCode,
-    String? responseBody,
-    Object? cause,
-  }) : super(
-         message,
-         statusCode: statusCode,
-         responseBody: responseBody,
-         cause: cause,
-       );
+    super.message, {
+    super.statusCode,
+    super.responseBody,
+    super.cause,
+  });
 }
 
 /// Exception thrown when the server returns an unexpected response
 class WebDAVServerException extends WebDAVException {
   const WebDAVServerException(
-    String message, {
-    int? statusCode,
-    String? responseBody,
-    Object? cause,
-  }) : super(
-         message,
-         statusCode: statusCode,
-         responseBody: responseBody,
-         cause: cause,
-       );
+    super.message, {
+    super.statusCode,
+    super.responseBody,
+    super.cause,
+  });
 }
 
 /// Exception thrown when a lock operation fails
 class WebDAVLockException extends WebDAVException {
   const WebDAVLockException(
-    String message, {
-    int? statusCode,
-    String? responseBody,
-    Object? cause,
-  }) : super(
-         message,
-         statusCode: statusCode,
-         responseBody: responseBody,
-         cause: cause,
-       );
+    super.message, {
+    super.statusCode,
+    super.responseBody,
+    super.cause,
+  });
 }
 
 /// Exception thrown when XML parsing fails
 class WebDAVXmlException extends WebDAVException {
   const WebDAVXmlException(
-    String message, {
-    int? statusCode,
-    String? responseBody,
-    Object? cause,
-  }) : super(
-         message,
-         statusCode: statusCode,
-         responseBody: responseBody,
-         cause: cause,
-       );
+    super.message, {
+    super.statusCode,
+    super.responseBody,
+    super.cause,
+  });
 }
 
 /// Exception thrown when a request times out
 class WebDAVTimeoutException extends WebDAVException {
   const WebDAVTimeoutException(
-    String message, {
-    int? statusCode,
-    String? responseBody,
-    Object? cause,
-  }) : super(
-         message,
-         statusCode: statusCode,
-         responseBody: responseBody,
-         cause: cause,
-       );
+    super.message, {
+    super.statusCode,
+    super.responseBody,
+    super.cause,
+  });
 }
 
 /// Exception thrown when the client is used incorrectly
 class WebDAVClientException extends WebDAVException {
   const WebDAVClientException(
-    String message, {
-    int? statusCode,
-    String? responseBody,
-    Object? cause,
-  }) : super(
-         message,
-         statusCode: statusCode,
-         responseBody: responseBody,
-         cause: cause,
-       );
+    super.message, {
+    super.statusCode,
+    super.responseBody,
+    super.cause,
+  });
 }

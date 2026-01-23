@@ -125,7 +125,7 @@ class WebDAVUtil {
       }
     }
 
-    String result = '/' + normalized.join('/');
+    String result = '/${normalized.join('/')}';
     if (path.endsWith('/') && !result.endsWith('/') && result != '/') {
       result += '/';
     }

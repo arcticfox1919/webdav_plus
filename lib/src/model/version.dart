@@ -2,6 +2,7 @@
 ///
 /// Contains classes for WebDAV versioning operations including
 /// version control, check-in/check-out, and baseline management.
+library;
 
 /// Represents a version-control request element
 ///

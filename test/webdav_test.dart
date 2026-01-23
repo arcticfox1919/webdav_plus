@@ -1,13 +1,7 @@
 import 'dart:convert';
 import 'package:test/test.dart';
 import 'package:webdav_plus/webdav_plus.dart';
-import 'package:webdav_plus/src/model/multistatus.dart';
-import 'package:webdav_plus/src/model/propfind.dart';
-import 'package:webdav_plus/src/model/search.dart';
 import 'package:webdav_plus/src/impl/http_webdav_client.dart';
-import 'package:webdav_plus/src/dav_quota.dart';
-import 'package:webdav_plus/src/dav_principal.dart';
-import 'package:webdav_plus/src/dav_ace.dart';
 
 void main() {
   group('WebDAV Plus Tests', () {

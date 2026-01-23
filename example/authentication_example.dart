@@ -1,4 +1,4 @@
-import '../lib/webdav_plus.dart';
+import 'package:webdav_plus/webdav_plus.dart';
 import 'dart:io';
 import 'dart:convert';
 

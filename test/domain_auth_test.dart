@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:test/test.dart';
-import '../lib/src/impl/http_webdav_client.dart';
+import 'package:webdav_plus/src/impl/http_webdav_client.dart';
 
 void main() {
   group('Domain Authentication Tests', () {

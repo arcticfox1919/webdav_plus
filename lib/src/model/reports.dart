@@ -2,6 +2,7 @@
 ///
 /// Contains classes for WebDAV reporting functionality including
 /// supported report sets and custom report definitions.
+library;
 
 /// Represents a supported report set property
 ///

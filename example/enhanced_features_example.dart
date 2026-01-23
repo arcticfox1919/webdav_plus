@@ -2,9 +2,10 @@
 ///
 /// This example shows how to use the new features added to match
 /// the Java Sardine library functionality.
+library;
 
 import 'dart:typed_data';
-import '../lib/webdav_plus.dart';
+import 'package:webdav_plus/webdav_plus.dart';
 
 void main() async {
   // Create a WebDAV client

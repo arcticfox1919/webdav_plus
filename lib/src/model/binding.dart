@@ -2,6 +2,7 @@
 ///
 /// Contains classes for WebDAV binding operations (BIND, UNBIND)
 /// as defined in RFC 5842.
+library;
 
 /// Represents a BIND request
 ///

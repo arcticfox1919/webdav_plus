@@ -2,6 +2,7 @@
 ///
 /// Contains classes representing various WebDAV privileges and permissions
 /// as defined in RFC 3744 (WebDAV Access Control Protocol).
+library;
 
 /// Represents a read privilege
 class ReadPrivilege {

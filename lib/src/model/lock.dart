@@ -1,4 +1,5 @@
 /// Represents lock-related elements for WebDAV locking support
+library;
 
 /// Represents an activelock element from a lockdiscovery response
 ///

@@ -1,5 +1,5 @@
 import 'package:xml/xml.dart';
-import '../lib/src/model/multistatus.dart';
+import 'package:webdav_plus/src/model/multistatus.dart';
 
 void main() {
   const multistatusXml = '''<?xml version="1.0" encoding="utf-8"?>

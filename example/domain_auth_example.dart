@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'dart:convert';
-import '../lib/webdav_plus.dart';
+import 'package:webdav_plus/webdav_plus.dart';
 
 /// Example demonstrating domain authentication and advanced WebDAV features
 /// This example shows how to use the enhanced WebDAV client with NTLM domain authentication
@@ -169,7 +169,7 @@ Future<void> main() async {
     print('- And much more!');
   } finally {
     // Clean up resources
-    client.dispose();
+    client.shutdown();
   }
 }
 

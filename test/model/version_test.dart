@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import '../../lib/src/model/version.dart';
+import 'package:webdav_plus/src/model/version.dart';
 
 void main() {
   group('VersionControl Tests', () {
