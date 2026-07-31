@@ -37,7 +37,9 @@ import '../parser/xml_helpers.dart' as xh;
 /// Uses Dart http package to communicate with WebDAV servers.
 /// Provides complete WebDAV protocol support following RFC 4918 and related specifications.
 class HttpWebdavClient implements WebdavClient {
+  final _defaultUserAgent = 'WebdavPlus-Dart/1.0.0';
   late http.Client _client;
+  late String _userAgent;
   String? _username;
   String? _password;
   String? _domain;
@@ -77,8 +79,9 @@ class HttpWebdavClient implements WebdavClient {
   }
 
   /// Create a new HttpWebdavClient instance with default HTTP client
-  HttpWebdavClient({String? baseUrl}) {
+  HttpWebdavClient({String? baseUrl, String? userAgent}) {
     _client = http.Client();
+    _userAgent = userAgent ?? _defaultUserAgent;
     _setupDefaultHeaders();
     if (baseUrl != null) {
       setBaseUrl(baseUrl);
@@ -91,8 +94,10 @@ class HttpWebdavClient implements WebdavClient {
     String password, {
     String? baseUrl,
     bool isPreemptive = false,
+    String? userAgent
   }) {
     _client = http.Client();
+    _userAgent = userAgent ?? _defaultUserAgent;
     _setupDefaultHeaders();
     if (baseUrl != null) {
       setBaseUrl(baseUrl);
@@ -101,8 +106,9 @@ class HttpWebdavClient implements WebdavClient {
   }
 
   /// Create client with compression support
-  HttpWebdavClient.withCompression({String? baseUrl}) {
+  HttpWebdavClient.withCompression({String? baseUrl, String? userAgent}) {
     _client = http.Client();
+    _userAgent = userAgent ?? _defaultUserAgent;
     _setupDefaultHeaders();
     if (baseUrl != null) {
       setBaseUrl(baseUrl);
@@ -117,8 +123,10 @@ class HttpWebdavClient implements WebdavClient {
     String? password,
     bool isPreemptive = false,
     bool compression = false,
+    String? userAgent
   }) {
     _client = http.Client();
+    _userAgent = userAgent ?? _defaultUserAgent;
     _setupDefaultHeaders();
     if (baseUrl != null) {
       setBaseUrl(baseUrl);
@@ -132,13 +140,14 @@ class HttpWebdavClient implements WebdavClient {
   }
 
   /// Create a new HttpWebdavClient instance with custom HTTP client
-  HttpWebdavClient.withClient(http.Client client) {
+  HttpWebdavClient.withClient(http.Client client, {String? userAgent}) {
     _client = client;
+    _userAgent = userAgent ?? _defaultUserAgent;
     _setupDefaultHeaders();
   }
 
   void _setupDefaultHeaders() {
-    _defaultHeaders = {'User-Agent': 'WebdavPlus-Dart/1.0.0', 'Accept': '*/*'};
+    _defaultHeaders = {'User-Agent': _userAgent, 'Accept': '*/*'};
   }
 
   @override
