@@ -319,10 +319,15 @@ abstract interface class WebdavClient {
   /// Downloads the resource at [url] directly to [savePath].
   /// [onProgress] callback receives (bytesReceived, totalBytes) for progress tracking.
   /// If totalBytes is -1, the content length is unknown.
+  ///
+  /// [abortTrigger] aborts the download once it completes, if the underlying
+  /// HTTP client supports it. The download then fails with a
+  /// `WebDAVNetworkException` whose `cause` is `RequestAbortedException`.
   Future<File> downloadToFile(
     String url,
     String savePath, {
     void Function(int bytesReceived, int totalBytes)? onProgress,
+    Future<void>? abortTrigger,
   });
 
   /// Uses HTTP PUT to send data to a server

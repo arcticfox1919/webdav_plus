@@ -1043,17 +1043,35 @@ class HttpWebdavClient implements WebdavClient {
     }
   }
 
+  /// Creates an abortable GET request. GET carries no body, so the sink is
+  /// closed right away to let the request be finalized.
+  http.AbortableStreamedRequest _createAbortableGetRequest(
+    Uri url,
+    Future<void>? abortTrigger,
+  ) {
+    final request = http.AbortableStreamedRequest(
+      'GET',
+      url,
+      abortTrigger: abortTrigger,
+    );
+    request.sink.close();
+    return request;
+  }
+
   @override
   Future<File> downloadToFile(
     String url,
     String savePath, {
     void Function(int bytesReceived, int totalBytes)? onProgress,
+    Future<void>? abortTrigger,
   }) async {
     final resolvedUrl = _resolveUrl(url);
     try {
       Map<String, String> requestHeaders = _buildHeaders();
 
-      http.Request request = http.Request('GET', Uri.parse(resolvedUrl));
+      http.BaseRequest request = abortTrigger == null
+          ? http.Request('GET', Uri.parse(resolvedUrl))
+          : _createAbortableGetRequest(Uri.parse(resolvedUrl), abortTrigger);
       request.headers.addAll(requestHeaders);
 
       http.StreamedResponse streamedResponse = await _client.send(request);
@@ -1061,10 +1079,12 @@ class HttpWebdavClient implements WebdavClient {
       // Handle authentication challenges
       if (streamedResponse.statusCode == 401) {
         if (_username != null && _password != null) {
-          http.Request retryRequest = http.Request(
-            'GET',
-            Uri.parse(resolvedUrl),
-          );
+          http.BaseRequest retryRequest = abortTrigger == null
+              ? http.Request('GET', Uri.parse(resolvedUrl))
+              : _createAbortableGetRequest(
+                  Uri.parse(resolvedUrl),
+                  abortTrigger,
+                );
           retryRequest.headers.addAll(requestHeaders);
           String username = _username!;
           if (_domain != null && _domain!.isNotEmpty) {
@@ -1106,13 +1126,17 @@ class HttpWebdavClient implements WebdavClient {
         dataStream = streamedResponse.stream;
       }
 
-      await for (final chunk in dataStream) {
-        sink.add(chunk);
-        bytesReceived += chunk.length;
-        onProgress?.call(bytesReceived, totalBytes);
+      try {
+        await for (final chunk in dataStream) {
+          sink.add(chunk);
+          bytesReceived += chunk.length;
+          onProgress?.call(bytesReceived, totalBytes);
+        }
+      } finally {
+        // Close the sink on both success and failure, so an aborted download
+        // does not leave the local file with an open handle.
+        await sink.close();
       }
-
-      await sink.close();
       return file;
     } catch (e) {
       if (e is WebDAVException) rethrow;
