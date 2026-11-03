@@ -400,12 +400,17 @@ abstract interface class WebdavClient {
   /// the stream can only be read once. If the server returns 401, the stream
   /// cannot be re-read for retry. Use `WebdavClient.withCredentials(..., isPreemptive: true)`
   /// or call `enablePreemptiveAuthentication()` before streaming uploads.
+  ///
+  /// [abortTrigger] aborts the upload once it completes, if the underlying
+  /// HTTP client supports it. The upload then fails with a
+  /// `WebDAVNetworkException` whose `cause` is `RequestAbortedException`.
   Future<void> putStream(
     String url,
     Stream<List<int>> dataStream,
     int contentLength,
-    String contentType,
-  );
+    String contentType, {
+    Future<void>? abortTrigger,
+  });
 
   /// Upload a file using streaming (for large files) with progress tracking
   ///
@@ -419,11 +424,16 @@ abstract interface class WebdavClient {
   /// the stream can only be read once. If the server returns 401, the stream
   /// cannot be re-read for retry. Use `WebdavClient.withCredentials(..., isPreemptive: true)`
   /// or call `enablePreemptiveAuthentication()` before streaming uploads.
+  ///
+  /// [abortTrigger] aborts the upload once it completes, if the underlying
+  /// HTTP client supports it. The upload then fails with a
+  /// `WebDAVNetworkException` whose `cause` is `RequestAbortedException`.
   Future<void> putFileStream(
     String url,
     File localFile, {
     String? contentType,
     void Function(int bytesSent, int totalBytes)? onProgress,
+    Future<void>? abortTrigger,
   });
 
   /// Delete a resource using HTTP DELETE at the specified url
