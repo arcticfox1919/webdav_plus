@@ -19,7 +19,11 @@ abstract interface class WebdavClient {
   ///
   /// [baseUrl] is the optional base URL for all operations. When set, all URL
   /// parameters can be relative paths resolved against this base URL.
-  factory WebdavClient({String? baseUrl}) => HttpWebdavClient(baseUrl: baseUrl);
+  ///
+  /// [userAgent] is the optional User-Agent string to be sent with all HTTP
+  /// requests. If not provided, a default user agent will be used by the
+  /// underlying HTTP client.
+  factory WebdavClient({String? baseUrl, String? userAgent}) => HttpWebdavClient(baseUrl: baseUrl, userAgent: userAgent);
 
   /// Factory constructor - creates client with authentication
   ///
@@ -34,26 +38,36 @@ abstract interface class WebdavClient {
   /// - `true`: Credentials are sent with every request immediately.
   ///   **Required for streaming uploads** (`putFileStream`, `putStream`) because
   ///   streams can only be read once and cannot be retried after a 401 response.
+  ///
+  /// [userAgent] is the optional User-Agent string to be sent with all HTTP
+  /// requests. If not provided, a default user agent will be used by the
+  /// underlying HTTP client.
   factory WebdavClient.withCredentials(
     String username,
     String password, {
     String? baseUrl,
     bool isPreemptive = false,
+    String? userAgent,
   }) => HttpWebdavClient.withCredentials(
     username,
     password,
     baseUrl: baseUrl,
     isPreemptive: isPreemptive,
+    userAgent: userAgent,
   );
 
   /// Factory constructor - creates client with compression support
   ///
   /// [baseUrl] is the optional base URL for all operations.
   ///
+  /// [userAgent] is the optional User-Agent string to be sent with all HTTP
+  /// requests. If not provided, a default user agent will be used by the
+  /// underlying HTTP client.
+  ///
   /// Enables HTTP gzip/deflate compression for responses. The server must also
   /// support compression for this to have effect.
-  factory WebdavClient.withCompression({String? baseUrl}) =>
-      HttpWebdavClient.withCompression(baseUrl: baseUrl);
+  factory WebdavClient.withCompression({String? baseUrl, String? userAgent}) =>
+      HttpWebdavClient.withCompression(baseUrl: baseUrl, userAgent: userAgent);
 
   /// Factory constructor - creates fully configured client
   ///
@@ -65,18 +79,24 @@ abstract interface class WebdavClient {
   /// **Required to be `true` for streaming uploads.**
   ///
   /// [compression] enables HTTP gzip/deflate compression when `true`.
+  ///
+  /// [userAgent] is the optional User-Agent string to be sent with all HTTP
+  /// requests. If not provided, a default user agent will be used by the
+  /// underlying HTTP client.
   factory WebdavClient.configured({
     String? baseUrl,
     String? username,
     String? password,
     bool isPreemptive = false,
     bool compression = false,
+    String? userAgent,
   }) => HttpWebdavClient.configured(
     baseUrl: baseUrl,
     username: username,
     password: password,
     isPreemptive: isPreemptive,
     compression: compression,
+    userAgent: userAgent,
   );
 
   /// Set the base URL for all operations
@@ -299,10 +319,15 @@ abstract interface class WebdavClient {
   /// Downloads the resource at [url] directly to [savePath].
   /// [onProgress] callback receives (bytesReceived, totalBytes) for progress tracking.
   /// If totalBytes is -1, the content length is unknown.
+  ///
+  /// [abortTrigger] aborts the download once it completes, if the underlying
+  /// HTTP client supports it. The download then fails with a
+  /// `WebDAVNetworkException` whose `cause` is `RequestAbortedException`.
   Future<File> downloadToFile(
     String url,
     String savePath, {
     void Function(int bytesReceived, int totalBytes)? onProgress,
+    Future<void>? abortTrigger,
   });
 
   /// Uses HTTP PUT to send data to a server
@@ -380,12 +405,17 @@ abstract interface class WebdavClient {
   /// the stream can only be read once. If the server returns 401, the stream
   /// cannot be re-read for retry. Use `WebdavClient.withCredentials(..., isPreemptive: true)`
   /// or call `enablePreemptiveAuthentication()` before streaming uploads.
+  ///
+  /// [abortTrigger] aborts the upload once it completes, if the underlying
+  /// HTTP client supports it. The upload then fails with a
+  /// `WebDAVNetworkException` whose `cause` is `RequestAbortedException`.
   Future<void> putStream(
     String url,
     Stream<List<int>> dataStream,
     int contentLength,
-    String contentType,
-  );
+    String contentType, {
+    Future<void>? abortTrigger,
+  });
 
   /// Upload a file using streaming (for large files) with progress tracking
   ///
@@ -399,11 +429,16 @@ abstract interface class WebdavClient {
   /// the stream can only be read once. If the server returns 401, the stream
   /// cannot be re-read for retry. Use `WebdavClient.withCredentials(..., isPreemptive: true)`
   /// or call `enablePreemptiveAuthentication()` before streaming uploads.
+  ///
+  /// [abortTrigger] aborts the upload once it completes, if the underlying
+  /// HTTP client supports it. The upload then fails with a
+  /// `WebDAVNetworkException` whose `cause` is `RequestAbortedException`.
   Future<void> putFileStream(
     String url,
     File localFile, {
     String? contentType,
     void Function(int bytesSent, int totalBytes)? onProgress,
+    Future<void>? abortTrigger,
   });
 
   /// Delete a resource using HTTP DELETE at the specified url

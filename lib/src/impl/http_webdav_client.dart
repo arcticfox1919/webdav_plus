@@ -37,7 +37,9 @@ import '../parser/xml_helpers.dart' as xh;
 /// Uses Dart http package to communicate with WebDAV servers.
 /// Provides complete WebDAV protocol support following RFC 4918 and related specifications.
 class HttpWebdavClient implements WebdavClient {
+  final _defaultUserAgent = 'WebdavPlus-Dart/1.0.0';
   late http.Client _client;
+  late String _userAgent;
   String? _username;
   String? _password;
   String? _domain;
@@ -77,8 +79,9 @@ class HttpWebdavClient implements WebdavClient {
   }
 
   /// Create a new HttpWebdavClient instance with default HTTP client
-  HttpWebdavClient({String? baseUrl}) {
+  HttpWebdavClient({String? baseUrl, String? userAgent}) {
     _client = http.Client();
+    _userAgent = userAgent ?? _defaultUserAgent;
     _setupDefaultHeaders();
     if (baseUrl != null) {
       setBaseUrl(baseUrl);
@@ -91,8 +94,10 @@ class HttpWebdavClient implements WebdavClient {
     String password, {
     String? baseUrl,
     bool isPreemptive = false,
+    String? userAgent
   }) {
     _client = http.Client();
+    _userAgent = userAgent ?? _defaultUserAgent;
     _setupDefaultHeaders();
     if (baseUrl != null) {
       setBaseUrl(baseUrl);
@@ -101,8 +106,9 @@ class HttpWebdavClient implements WebdavClient {
   }
 
   /// Create client with compression support
-  HttpWebdavClient.withCompression({String? baseUrl}) {
+  HttpWebdavClient.withCompression({String? baseUrl, String? userAgent}) {
     _client = http.Client();
+    _userAgent = userAgent ?? _defaultUserAgent;
     _setupDefaultHeaders();
     if (baseUrl != null) {
       setBaseUrl(baseUrl);
@@ -117,8 +123,10 @@ class HttpWebdavClient implements WebdavClient {
     String? password,
     bool isPreemptive = false,
     bool compression = false,
+    String? userAgent
   }) {
     _client = http.Client();
+    _userAgent = userAgent ?? _defaultUserAgent;
     _setupDefaultHeaders();
     if (baseUrl != null) {
       setBaseUrl(baseUrl);
@@ -132,13 +140,14 @@ class HttpWebdavClient implements WebdavClient {
   }
 
   /// Create a new HttpWebdavClient instance with custom HTTP client
-  HttpWebdavClient.withClient(http.Client client) {
+  HttpWebdavClient.withClient(http.Client client, {String? userAgent}) {
     _client = client;
+    _userAgent = userAgent ?? _defaultUserAgent;
     _setupDefaultHeaders();
   }
 
   void _setupDefaultHeaders() {
-    _defaultHeaders = {'User-Agent': 'WebdavPlus-Dart/1.0.0', 'Accept': '*/*'};
+    _defaultHeaders = {'User-Agent': _userAgent, 'Accept': '*/*'};
   }
 
   @override
@@ -1034,17 +1043,35 @@ class HttpWebdavClient implements WebdavClient {
     }
   }
 
+  /// Creates an abortable GET request. GET carries no body, so the sink is
+  /// closed right away to let the request be finalized.
+  http.AbortableStreamedRequest _createAbortableGetRequest(
+    Uri url,
+    Future<void>? abortTrigger,
+  ) {
+    final request = http.AbortableStreamedRequest(
+      'GET',
+      url,
+      abortTrigger: abortTrigger,
+    );
+    request.sink.close();
+    return request;
+  }
+
   @override
   Future<File> downloadToFile(
     String url,
     String savePath, {
     void Function(int bytesReceived, int totalBytes)? onProgress,
+    Future<void>? abortTrigger,
   }) async {
     final resolvedUrl = _resolveUrl(url);
     try {
       Map<String, String> requestHeaders = _buildHeaders();
 
-      http.Request request = http.Request('GET', Uri.parse(resolvedUrl));
+      http.BaseRequest request = abortTrigger == null
+          ? http.Request('GET', Uri.parse(resolvedUrl))
+          : _createAbortableGetRequest(Uri.parse(resolvedUrl), abortTrigger);
       request.headers.addAll(requestHeaders);
 
       http.StreamedResponse streamedResponse = await _client.send(request);
@@ -1052,10 +1079,12 @@ class HttpWebdavClient implements WebdavClient {
       // Handle authentication challenges
       if (streamedResponse.statusCode == 401) {
         if (_username != null && _password != null) {
-          http.Request retryRequest = http.Request(
-            'GET',
-            Uri.parse(resolvedUrl),
-          );
+          http.BaseRequest retryRequest = abortTrigger == null
+              ? http.Request('GET', Uri.parse(resolvedUrl))
+              : _createAbortableGetRequest(
+                  Uri.parse(resolvedUrl),
+                  abortTrigger,
+                );
           retryRequest.headers.addAll(requestHeaders);
           String username = _username!;
           if (_domain != null && _domain!.isNotEmpty) {
@@ -1097,13 +1126,17 @@ class HttpWebdavClient implements WebdavClient {
         dataStream = streamedResponse.stream;
       }
 
-      await for (final chunk in dataStream) {
-        sink.add(chunk);
-        bytesReceived += chunk.length;
-        onProgress?.call(bytesReceived, totalBytes);
+      try {
+        await for (final chunk in dataStream) {
+          sink.add(chunk);
+          bytesReceived += chunk.length;
+          onProgress?.call(bytesReceived, totalBytes);
+        }
+      } finally {
+        // Close the sink on both success and failure, so an aborted download
+        // does not leave the local file with an open handle.
+        await sink.close();
       }
-
-      await sink.close();
       return file;
     } catch (e) {
       if (e is WebDAVException) rethrow;
@@ -1111,51 +1144,77 @@ class HttpWebdavClient implements WebdavClient {
     }
   }
 
+  /// Creates a streaming PUT request. When [abortTrigger] is provided the
+  /// request is abortable, so completing the trigger closes the connection.
+  http.StreamedRequest _createPutStreamRequest(
+    Uri url,
+    Future<void>? abortTrigger,
+  ) {
+    if (abortTrigger == null) {
+      return http.StreamedRequest('PUT', url);
+    }
+    return http.AbortableStreamedRequest(
+      'PUT',
+      url,
+      abortTrigger: abortTrigger,
+    );
+  }
+
   @override
   Future<void> putStream(
     String url,
     Stream<List<int>> dataStream,
     int contentLength,
-    String contentType,
-  ) async {
+    String contentType, {
+    Future<void>? abortTrigger,
+  }) async {
     final resolvedUrl = _resolveUrl(url);
     try {
       Map<String, String> headers = _buildHeaders();
       headers['Content-Type'] = contentType;
       headers['Content-Length'] = contentLength.toString();
 
-      http.StreamedRequest request = http.StreamedRequest(
-        'PUT',
+      http.StreamedRequest request = _createPutStreamRequest(
         Uri.parse(resolvedUrl),
+        abortTrigger,
       );
       request.headers.addAll(headers);
 
       // Pipe the data stream to the request
-      dataStream.listen(
+      final dataSubscription = dataStream.listen(
         request.sink.add,
         onDone: () => request.sink.close(),
         onError: (e) => request.sink.addError(e),
         cancelOnError: true,
       );
+      // Stop feeding the request once it is aborted; the connection itself is
+      // closed by the HTTP client.
+      abortTrigger?.whenComplete(dataSubscription.cancel);
 
-      http.StreamedResponse streamedResponse = await _client.send(request);
+      try {
+        http.StreamedResponse streamedResponse = await _client.send(request);
 
-      // Handle authentication challenges
-      if (streamedResponse.statusCode == 401) {
-        // For streamed requests, we cannot retry easily as the stream is consumed
-        // Throw an auth error to let the caller know
-        throw WebDAVAuthenticationException(
-          'Authentication required. Use preemptive authentication for streaming uploads.',
-        );
-      }
+        // Handle authentication challenges
+        if (streamedResponse.statusCode == 401) {
+          // For streamed requests, we cannot retry easily as the stream is consumed
+          // Throw an auth error to let the caller know
+          throw WebDAVAuthenticationException(
+            'Authentication required. Use preemptive authentication for streaming uploads.',
+          );
+        }
 
-      if (!WebDAVUtil.isSuccessStatus(streamedResponse.statusCode)) {
-        final body = await streamedResponse.stream.bytesToString();
-        throw WebDAVException(
-          'PUT stream failed',
-          statusCode: streamedResponse.statusCode,
-          responseBody: body,
-        );
+        if (!WebDAVUtil.isSuccessStatus(streamedResponse.statusCode)) {
+          final body = await streamedResponse.stream.bytesToString();
+          throw WebDAVException(
+            'PUT stream failed',
+            statusCode: streamedResponse.statusCode,
+            responseBody: body,
+          );
+        }
+      } finally {
+        // Release the source stream before completing, so callers can clean up
+        // their own files as soon as the upload future settles.
+        await dataSubscription.cancel();
       }
     } catch (e) {
       if (e is WebDAVException) rethrow;
@@ -1169,6 +1228,7 @@ class HttpWebdavClient implements WebdavClient {
     File localFile, {
     String? contentType,
     void Function(int bytesSent, int totalBytes)? onProgress,
+    Future<void>? abortTrigger,
   }) async {
     final resolvedUrl = _resolveUrl(url);
     try {
@@ -1178,9 +1238,9 @@ class HttpWebdavClient implements WebdavClient {
       headers['Content-Type'] = mimeType;
       headers['Content-Length'] = fileLength.toString();
 
-      http.StreamedRequest request = http.StreamedRequest(
-        'PUT',
+      http.StreamedRequest request = _createPutStreamRequest(
         Uri.parse(resolvedUrl),
+        abortTrigger,
       );
       request.headers.addAll(headers);
 
@@ -1188,7 +1248,7 @@ class HttpWebdavClient implements WebdavClient {
 
       // Create a transforming stream that tracks progress
       final fileStream = localFile.openRead();
-      fileStream.listen(
+      final fileSubscription = fileStream.listen(
         (chunk) {
           request.sink.add(chunk);
           bytesSent += chunk.length;
@@ -1198,23 +1258,32 @@ class HttpWebdavClient implements WebdavClient {
         onError: (e) => request.sink.addError(e),
         cancelOnError: true,
       );
+      // Stop reading the file once it is aborted; the connection itself is
+      // closed by the HTTP client.
+      abortTrigger?.whenComplete(fileSubscription.cancel);
 
-      http.StreamedResponse streamedResponse = await _client.send(request);
+      try {
+        http.StreamedResponse streamedResponse = await _client.send(request);
 
-      // Handle authentication challenges
-      if (streamedResponse.statusCode == 401) {
-        throw WebDAVAuthenticationException(
-          'Authentication required. Use preemptive authentication for streaming uploads.',
-        );
-      }
+        // Handle authentication challenges
+        if (streamedResponse.statusCode == 401) {
+          throw WebDAVAuthenticationException(
+            'Authentication required. Use preemptive authentication for streaming uploads.',
+          );
+        }
 
-      if (!WebDAVUtil.isSuccessStatus(streamedResponse.statusCode)) {
-        final body = await streamedResponse.stream.bytesToString();
-        throw WebDAVException(
-          'PUT file stream failed',
-          statusCode: streamedResponse.statusCode,
-          responseBody: body,
-        );
+        if (!WebDAVUtil.isSuccessStatus(streamedResponse.statusCode)) {
+          final body = await streamedResponse.stream.bytesToString();
+          throw WebDAVException(
+            'PUT file stream failed',
+            statusCode: streamedResponse.statusCode,
+            responseBody: body,
+          );
+        }
+      } finally {
+        // Release the file handle before completing, so callers can clean up
+        // their own files as soon as the upload future settles.
+        await fileSubscription.cancel();
       }
     } catch (e) {
       if (e is WebDAVException) rethrow;
