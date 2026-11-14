@@ -1012,6 +1012,7 @@ class HttpWebdavClient implements WebdavClient {
             username,
             _password!,
           );
+          await streamedResponse.stream.drain();
           streamedResponse = await _client.send(retryRequest);
         }
       }
@@ -1094,6 +1095,7 @@ class HttpWebdavClient implements WebdavClient {
             username,
             _password!,
           );
+          await streamedResponse.stream.drain();
           streamedResponse = await _client.send(retryRequest);
         }
       }
@@ -1198,6 +1200,7 @@ class HttpWebdavClient implements WebdavClient {
         if (streamedResponse.statusCode == 401) {
           // For streamed requests, we cannot retry easily as the stream is consumed
           // Throw an auth error to let the caller know
+          await streamedResponse.stream.drain();
           throw WebDAVAuthenticationException(
             'Authentication required. Use preemptive authentication for streaming uploads.',
           );
@@ -1211,6 +1214,8 @@ class HttpWebdavClient implements WebdavClient {
             responseBody: body,
           );
         }
+        // Consume the response body so the connection can be reused.
+        await streamedResponse.stream.drain();
       } finally {
         // Release the source stream before completing, so callers can clean up
         // their own files as soon as the upload future settles.
@@ -1267,6 +1272,7 @@ class HttpWebdavClient implements WebdavClient {
 
         // Handle authentication challenges
         if (streamedResponse.statusCode == 401) {
+          await streamedResponse.stream.drain();
           throw WebDAVAuthenticationException(
             'Authentication required. Use preemptive authentication for streaming uploads.',
           );
@@ -1280,6 +1286,8 @@ class HttpWebdavClient implements WebdavClient {
             responseBody: body,
           );
         }
+        // Consume the response body so the connection can be reused.
+        await streamedResponse.stream.drain();
       } finally {
         // Release the file handle before completing, so callers can clean up
         // their own files as soon as the upload future settles.
